@@ -3,6 +3,7 @@
 
 from PyQt5.QtCore import QObject
 
+import os.path
 import numpy
 import trimesh
 
@@ -31,7 +32,16 @@ class MeshTools(Extension, QObject,):
         QObject.__init__(self, parent)
         Extension.__init__(self)
 
-        self._controller = Application.getInstance().getController()
+        self._application = Application.getInstance()
+        self._controller = self._application.getController()
+
+        self._application.fileLoaded.connect(self._onFileLoaded)
+        self._application.fileCompleted.connect(self._onFileCompleted)
+        self._controller.getScene().sceneChanged.connect(self._onSceneChanged)
+
+        self._currently_loading_files = [] #type: List[str]
+        self._check_node_queue = [] #type: List[SceneNode]
+        self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkSelectedMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForSelectedMeshes)
@@ -39,6 +49,61 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitSelectedMeshes)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+
+    def _onFileLoaded(self, file_name):
+        self._currently_loading_files.append(file_name)
+
+    def _onFileCompleted(self, file_name):
+        if file_name in self._currently_loading_files:
+            self._currently_loading_files.remove(file_name)
+
+    def _onSceneChanged(self, node):
+        if not node or not node.getMeshData():
+            return
+
+        # only check meshes that have just been loaded
+        if node.getMeshData().getFileName() not in self._currently_loading_files:
+            return
+
+        # the scene may change multiple times while loading a mesh,
+        # but we want to check the mesh only once
+        if node not in self._check_node_queue:
+            self._check_node_queue.append(node)
+            self._application.callLater(self.checkQueuedNodes)
+
+    def checkQueuedNodes(self):
+        for node in self._check_node_queue:
+            tri_node = self._toTriMesh(node.getMeshData())
+            if tri_node.is_watertight:
+                continue
+
+            file_name = node.getMeshData().getFileName()
+            base_name = os.path.basename(file_name)
+
+            if file_name in self._mesh_not_watertight_messages:
+                self._mesh_not_watertight_messages[file_name].hide()
+
+            message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+            body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
+
+            # XRayView may not be available if the plugin has been disabled
+            if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
+                body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
+                message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
+                message.actionTriggered.connect(self._showXRayView)
+            else:
+                body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
+
+            message.setText(body)
+            message.show()
+
+            self._mesh_not_watertight_messages[file_name] = message
+
+        self._check_node_queue = []
+
+    def _showXRayView(self, message, action):
+        self._controller.setActiveView("XRayView")
+        message.hide()
 
     def checkSelectedMeshes(self):
         message_body = catalog.i18nc("@info:status", "Model summary:")
