@@ -158,6 +158,7 @@ class MeshTools(Extension, QObject,):
             new_node = CuraSceneNode()
             new_node.setSelectable(True)
             new_node.setMeshData(mesh_data)
+            new_node.setName(name if i==0 else "%s %d" % (name, i))
             new_node.callDecoration("setActiveExtruder", extruder_id)
             new_node.addDecorator(BuildPlateDecorator(build_plate))
             new_node.addDecorator(SliceableObjectDecorator())
