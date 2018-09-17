@@ -43,10 +43,10 @@ class MeshTools(Extension, QObject,):
         self._check_node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkSelectedMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForSelectedMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForSelectedMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitSelectedMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
 
@@ -105,23 +105,40 @@ class MeshTools(Extension, QObject,):
         self._controller.setActiveView("XRayView")
         message.hide()
 
-    def checkSelectedMeshes(self):
-        message_body = catalog.i18nc("@info:status", "Model summary:")
-        for node in Selection.getAllSelectedObjects():
+    def getSelectedNodes(self):
+        self._message.hide()
+        selection = Selection.getAllSelectedObjects()[:]
+        if selection:
+            return selection
+        else:
+            self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
+            self._message.show()
+
+    def checkMeshes(self):
+        nodes_list = self.getSelectedNodes()
+        if not nodes_list:
+            return
+
+        message_body = catalog.i18nc("@info:status", "Check summary:")
+        for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshData())
-            message_body = message_body + "\n - %s:" % node.getName()
+            message_body = message_body + "\n - %s" % node.getName()
             if tri_node.is_watertight:
                 message_body = message_body + " " + catalog.i18nc("@info:status", "is watertight")
             else:
-                message_body = message_body + " " + catalog.i18nc("@info:status", "is NOT watertight")
+                message_body = message_body + " " + catalog.i18nc("@info:status", "is not watertight and may not print properly")
             if tri_node.body_count > 1:
                 message_body = message_body + " " + catalog.i18nc("@info:status", "and consists of {body_count} submeshes").format(body_count = tri_node.body_count)
 
         self._message.setText(message_body)
         self._message.show()
 
-    def fixSimpleHolesForSelectedMeshes(self):
-        for node in Selection.getAllSelectedObjects():
+    def fixSimpleHolesForMeshes(self):
+        nodes_list = self.getSelectedNodes()
+        if not nodes_list:
+            return
+
+        for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshData())
             success = tri_node.fill_holes()
             self._replaceSceneNode(node, [tri_node])
@@ -129,17 +146,33 @@ class MeshTools(Extension, QObject,):
                 self._message.setText(catalog.i18nc("@info:status", "The mesh needs more extensive repair to become watertight"))
                 self._message.show()
 
-    def fixNormalsForSelectedMeshes(self):
-        for node in Selection.getAllSelectedObjects():
+    def fixNormalsForMeshes(self):
+        nodes_list = self.getSelectedNodes()
+        if not nodes_list:
+            return
+
+        for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshData())
             tri_node.fix_normals()
             self._replaceSceneNode(node, [tri_node])
 
-    def splitSelectedMeshes(self):
-        for node in Selection.getAllSelectedObjects():
+    def splitMeshes(self):
+        nodes_list = self.getSelectedNodes()
+        if not nodes_list:
+            return
+
+        message_body = catalog.i18nc("@info:status", "Split result:")
+        for node in nodes_list:
+            message_body = message_body + "\n - %s" % node.getName()
             tri_node = self._toTriMesh(node.getMeshData())
             if tri_node.body_count > 1:
                 self._replaceSceneNode(node, tri_node.split())
+                message_body = message_body + " " + catalog.i18nc("@info:status", "was split in %d submeshes") % tri_node.body_count
+            else:
+                message_body = message_body + " " + catalog.i18nc("@info:status", "could not be split into submeshes")
+
+        self._message.setText(message_body)
+        self._message.show()
 
     def _replaceSceneNode(self, existing_node, trimeshes):
         name = existing_node.getName()
