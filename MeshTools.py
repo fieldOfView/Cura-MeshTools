@@ -185,14 +185,14 @@ class MeshTools(Extension, QObject,):
 
         index_count = 0
         face_count = 0
-        for triface in tri_faces:
+        for tri_face in tri_faces:
             face = []
-            for triindex in triface:
-                vertices.append(tri_vertices[triindex])
+            for tri_index in tri_face:
+                vertices.append(tri_vertices[tri_index])
                 face.append(index_count)
-                index_count = index_count + 1
+                index_count += 1
             indices.append(face)
-            face_count = face_count + 1
+            face_count += 1
 
         vertices = numpy.asarray(vertices, dtype=numpy.float32)
         indices = numpy.asarray(indices, dtype=numpy.int32)
