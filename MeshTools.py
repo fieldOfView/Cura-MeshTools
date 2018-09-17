@@ -148,6 +148,7 @@ class MeshTools(Extension, QObject,):
         parent = existing_node.getParent()
         extruder_id = existing_node.callDecoration("getActiveExtruder")
         build_plate = existing_node.callDecoration("getBuildPlateNumber")
+        selected = Selection.isSelected(existing_node)
 
         op = GroupedOperation()
         op.addOperation(RemoveSceneNodeOperation(existing_node))
@@ -166,6 +167,8 @@ class MeshTools(Extension, QObject,):
             op.addOperation(AddSceneNodeOperation(new_node, parent))
             op.addOperation(SetTransformMatrixOperation(new_node, transformation))
 
+            if selected:
+                Selection.add(new_node)
         op.push()
 
     def _toTriMesh(self, mesh_data: MeshData) -> trimesh.base.Trimesh:
