@@ -166,7 +166,7 @@ class MeshTools(Extension, QObject,):
             message_body = message_body + "\n - %s" % node.getName()
             tri_node = self._toTriMesh(node.getMeshData())
             if tri_node.body_count > 1:
-                self._replaceSceneNode(node, tri_node.split())
+                self._replaceSceneNode(node, tri_node.split(only_watertight=False))
                 message_body = message_body + " " + catalog.i18nc("@info:status", "was split in %d submeshes") % tri_node.body_count
             else:
                 message_body = message_body + " " + catalog.i18nc("@info:status", "could not be split into submeshes")
