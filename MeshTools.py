@@ -19,10 +19,12 @@ from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
 from UM.Mesh.MeshBuilder import MeshBuilder
+from UM.Math.AxisAlignedBox import AxisAlignedBox
 
 from cura.Scene.CuraSceneNode import CuraSceneNode
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
+from .SetParentOperationSimplified import SetParentOperationSimplified
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
@@ -183,6 +185,9 @@ class MeshTools(Extension, QObject,):
         build_plate = existing_node.callDecoration("getBuildPlateNumber")
         selected = Selection.isSelected(existing_node)
 
+        children = existing_node.getChildren()
+        new_nodes = []
+
         op = GroupedOperation()
         op.addOperation(RemoveSceneNodeOperation(existing_node))
 
@@ -200,8 +205,23 @@ class MeshTools(Extension, QObject,):
             op.addOperation(AddSceneNodeOperation(new_node, parent))
             op.addOperation(SetTransformMatrixOperation(new_node, transformation))
 
+            new_nodes.append(new_node)
+
             if selected:
                 Selection.add(new_node)
+
+        for child in children:
+            child_bounding_box = child.getMeshData().getTransformed(child.getWorldTransformation()).getExtents()
+            new_parent = None
+            for potential_parent in new_nodes:
+                parent_bounding_box = potential_parent.getMeshData().getTransformed(potential_parent.getWorldTransformation()).getExtents()
+                if child_bounding_box.intersectsBox(parent_bounding_box) != AxisAlignedBox.IntersectionResult.NoIntersection:
+                    new_parent = potential_parent
+                    break
+            if not new_parent:
+                new_parent = new_nodes[0]
+            op.addOperation(SetParentOperationSimplified(child, new_parent))
+
         op.push()
 
     def _toTriMesh(self, mesh_data: MeshData) -> trimesh.base.Trimesh:
