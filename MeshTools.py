@@ -10,7 +10,6 @@ import trimesh
 from UM.Extension import Extension
 from UM.Application import Application
 from UM.Message import Message
-from UM.Version import Version
 
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
@@ -105,9 +104,15 @@ class MeshTools(Extension, QObject,):
         self._check_node_queue = []
 
     def _showXRayView(self, message, action):
-        # in Cura 4, X-Ray view is in the preview stage
-        version = Application.getInstance().getVersion()
-        if version == "master" or Version(version) >= Version(4):
+        try:
+            major_api_version = Application.getInstance().getAPIVersion().getMajor()
+        except AttributeError:
+            # UM.Application.getAPIVersion was added for API > 6 (Cura 4)
+            # Since this plugin version is only compatible with Cura 3.5 and newer, it is safe to assume API 5
+            major_api_version = 5
+
+        if major_api_version >= 6:
+            # in Cura 4, X-Ray view is in the preview stage
             self._controller.setActiveStage("PreviewStage")
 
         self._controller.setActiveView("XRayView")
