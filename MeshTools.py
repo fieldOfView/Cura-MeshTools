@@ -118,17 +118,24 @@ class MeshTools(Extension, QObject,):
         self._controller.setActiveView("XRayView")
         message.hide()
 
-    def getSelectedNodes(self):
+    def _getAllSelectedNodes(self):
         self._message.hide()
         selection = Selection.getAllSelectedObjects()[:]
         if selection:
-            return selection
-        else:
-            self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
-            self._message.show()
+            deep_selection = []
+            for selected_node in selection:
+                if selected_node.hasChildren():
+                    deep_selection = deep_selection + selected_node.getAllChildren()
+                if selected_node.getMeshData() != None:
+                    deep_selection.append(selected_node)
+            if deep_selection:
+                return deep_selection
+
+        self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
+        self._message.show()
 
     def checkMeshes(self):
-        nodes_list = self.getSelectedNodes()
+        nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
 
@@ -147,7 +154,7 @@ class MeshTools(Extension, QObject,):
         self._message.show()
 
     def fixSimpleHolesForMeshes(self):
-        nodes_list = self.getSelectedNodes()
+        nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
 
@@ -160,7 +167,7 @@ class MeshTools(Extension, QObject,):
                 self._message.show()
 
     def fixNormalsForMeshes(self):
-        nodes_list = self.getSelectedNodes()
+        nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
 
@@ -170,7 +177,7 @@ class MeshTools(Extension, QObject,):
             self._replaceSceneNode(node, [tri_node])
 
     def splitMeshes(self):
-        nodes_list = self.getSelectedNodes()
+        nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
 
