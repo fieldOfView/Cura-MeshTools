@@ -15,6 +15,7 @@ from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
+from UM.Operations.SetTransformOperation import SetTransformOperation
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
@@ -23,7 +24,6 @@ from UM.Math.AxisAlignedBox import AxisAlignedBox
 
 from cura.Scene.CuraSceneNode import CuraSceneNode
 
-from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
 
 from UM.i18n import i18nCatalog
@@ -197,7 +197,8 @@ class MeshTools(Extension, QObject,):
     def _replaceSceneNode(self, existing_node, trimeshes):
         name = existing_node.getName()
         file_name = existing_node.getMeshData().getFileName()
-        transformation = existing_node.getWorldTransformation()
+        transformation = existing_node.getWorldPosition()
+
         parent = existing_node.getParent()
         extruder_id = existing_node.callDecoration("getActiveExtruder")
         build_plate = existing_node.callDecoration("getBuildPlateNumber")
@@ -220,8 +221,10 @@ class MeshTools(Extension, QObject,):
             new_node.addDecorator(BuildPlateDecorator(build_plate))
             new_node.addDecorator(SliceableObjectDecorator())
 
+            new_node.setCenterPosition(new_node.getBoundingBox().center)
+
             op.addOperation(AddSceneNodeOperation(new_node, parent))
-            op.addOperation(SetTransformMatrixOperation(new_node, transformation))
+            op.addOperation(SetTransformOperation(new_node, translation = existing_node.getWorldPosition() + new_node.getBoundingBox().center))
 
             new_nodes.append(new_node)
 
