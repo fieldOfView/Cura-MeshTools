@@ -8,9 +8,10 @@ import os.path
 import numpy
 import trimesh
 
-from UM.Extension import Extension
-from UM.Message import Message
 from cura.CuraApplication import CuraApplication
+from UM.Extension import Extension
+from UM.PluginRegistry import PluginRegistry
+from UM.Message import Message
 
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
@@ -113,7 +114,7 @@ class MeshTools(Extension, QObject,):
             # Since this plugin version is only compatible with Cura 3.5 and newer, it is safe to assume API 5
             major_api_version = 5
 
-        if major_api_version >= 6:
+        if major_api_version >= 6 and "SidebarGUIPlugin" not in PluginRegistry.getInstance().getActivePlugins():
             # in Cura 4, X-Ray view is in the preview stage
             self._controller.setActiveStage("PreviewStage")
 
