@@ -9,22 +9,20 @@ import numpy
 import trimesh
 
 from UM.Extension import Extension
-from UM.Application import Application
 from UM.Message import Message
+from cura.CuraApplication import CuraApplication
 
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
+from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
 from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
 from UM.Mesh.ReadMeshJob import ReadMeshJob
-
-from cura.CuraApplication import CuraApplication
-from cura.Scene.CuraSceneNode import CuraSceneNode
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
@@ -37,7 +35,7 @@ class MeshTools(Extension, QObject,):
         QObject.__init__(self, parent)
         Extension.__init__(self)
 
-        self._application = Application.getInstance()
+        self._application = CuraApplication.getInstance()
         self._controller = self._application.getController()
 
         self._application.fileLoaded.connect(self._onFileLoaded)
@@ -45,14 +43,14 @@ class MeshTools(Extension, QObject,):
         self._controller.getScene().sceneChanged.connect(self._onSceneChanged)
 
         self._currently_loading_files = [] #type: List[str]
-        self._check_node_queue = [] #type: List[SceneNode]
+        self._node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models"), self.replaceMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
 
@@ -73,12 +71,12 @@ class MeshTools(Extension, QObject,):
 
         # the scene may change multiple times while loading a mesh,
         # but we want to check the mesh only once
-        if node not in self._check_node_queue:
-            self._check_node_queue.append(node)
+        if node not in self._node_queue:
+            self._node_queue.append(node)
             self._application.callLater(self.checkQueuedNodes)
 
     def checkQueuedNodes(self):
-        for node in self._check_node_queue:
+        for node in self._node_queue:
             tri_node = self._toTriMesh(node.getMeshData())
             if tri_node.is_watertight:
                 continue
@@ -105,11 +103,11 @@ class MeshTools(Extension, QObject,):
 
             self._mesh_not_watertight_messages[file_name] = message
 
-        self._check_node_queue = []
+        self._node_queue = []
 
     def _showXRayView(self, message, action):
         try:
-            major_api_version = Application.getInstance().getAPIVersion().getMajor()
+            major_api_version = self._application.getAPIVersion().getMajor()
         except AttributeError:
             # UM.Application.getAPIVersion was added for API > 6 (Cura 4)
             # Since this plugin version is only compatible with Cura 3.5 and newer, it is safe to assume API 5
@@ -199,44 +197,60 @@ class MeshTools(Extension, QObject,):
         self._message.show()
 
     def replaceMeshes(self):
-        nodes_list = self._getAllSelectedNodes()
-        if not nodes_list:
+        self._node_queue = self._getAllSelectedNodes()
+        if not self._node_queue:
             return
+
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        filter_types = ";;".join(Application.getInstance().getMeshFileHandler().supportedReadFileTypes)
+        filter_types = ";;".join(self._application.getMeshFileHandler().supportedReadFileTypes)
+
         directory = None
-        if nodes_list[0].getMeshData() is not None:
-            directory = nodes_list[0].getMeshData().getFileName()
+        if self._node_queue[0].getMeshData() is not None:
+            directory = self._node_queue[0].getMeshData().getFileName()
         if not directory:
-            directory = ""
-        file_name, _ = QFileDialog.getOpenFileName(None, "Replacement Mesh File", directory=directory, options=options, filter=filter_types)
-        if file_name:
-            job = ReadMeshJob(file_name)
-            job.finished.connect(self._readMeshFinished)
-            job.start()
+            directory = self._application.getDefaultPath("dialog_load_path")
+
+        file_name, _ = QFileDialog.getOpenFileName(
+            parent=None,
+            caption=catalog.i18nc("@title:window", "Select Replacement Mesh File"),
+            directory=directory, options=options, filter=filter_types
+        )
+        if not file_name:
+            return
+
+        job = ReadMeshJob(file_name)
+        job.finished.connect(self._readMeshFinished)
+        job.start()
 
     def _readMeshFinished(self, job):
         job_result = job.getResult()
         if len(job_result) == 0:
             self._message.setText(catalog.i18nc("@info:status", "Failed to load mesh"))
             self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
             return
+
         mesh_data = job_result[0].getMeshData()
         if not mesh_data:
             self._message.setText(catalog.i18nc("@info:status", "Mesh contained no data"))
             self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
             return
+
         has_merged_nodes = False
-        nodes_list = self._getAllSelectedNodes()
-        for node in nodes_list:
+
+        for node in self._node_queue:
+            node.setMeshData(mesh_data)
+
             if not isinstance(node, CuraSceneNode) or not node.getMeshData():
                 if node.getName() == "MergedMesh":
                     has_merged_nodes = True
-        for node in nodes_list:
-            node.setMeshData(mesh_data)
+
         if has_merged_nodes:
-            CuraApplication.getInstance().updateOriginOfMergedMeshes()
+            self._application.updateOriginOfMergedMeshes()
+
+        self._node_queue = [] #type: List[SceneNode]
 
     def _replaceSceneNode(self, existing_node, trimeshes):
         name = existing_node.getName()
