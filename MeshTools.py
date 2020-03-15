@@ -115,8 +115,11 @@ class MeshTools(Extension, QObject,):
             major_api_version = 5
 
         if major_api_version >= 6 and "SidebarGUIPlugin" not in PluginRegistry.getInstance().getActivePlugins():
-            # in Cura 4, X-Ray view is in the preview stage
+            # in Cura 4.x, X-Ray view is in the preview stage
             self._controller.setActiveStage("PreviewStage")
+        else:
+            # in Cura 3.x, and in 4.x with the Sidebar GUI Plugin, X-Ray view is in the prepare stage
+            self._controller.setActiveStage("PrepareStage")
 
         self._controller.setActiveView("XRayView")
         message.hide()
