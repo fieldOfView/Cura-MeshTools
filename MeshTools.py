@@ -2,6 +2,7 @@
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
 from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QFileDialog
 
 import os.path
 import numpy
@@ -20,7 +21,9 @@ from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
 from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
+from UM.Mesh.ReadMeshJob import ReadMeshJob
 
+from cura.CuraApplication import CuraApplication
 from cura.Scene.CuraSceneNode import CuraSceneNode
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
@@ -49,6 +52,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models"), self.replaceMeshes)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
 
@@ -193,6 +197,46 @@ class MeshTools(Extension, QObject,):
 
         self._message.setText(message_body)
         self._message.show()
+
+    def replaceMeshes(self):
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filter_types = ";;".join(Application.getInstance().getMeshFileHandler().supportedReadFileTypes)
+        directory = None
+        if nodes_list[0].getMeshData() is not None:
+            directory = nodes_list[0].getMeshData().getFileName()
+        if not directory:
+            directory = ""
+        file_name, _ = QFileDialog.getOpenFileName(None, "Replacement Mesh File", directory=directory, options=options, filter=filter_types)
+        if file_name:
+            job = ReadMeshJob(file_name)
+            job.finished.connect(self._readMeshFinished)
+            job.start()
+
+    def _readMeshFinished(self, job):
+        job_result = job.getResult()
+        if len(job_result) == 0:
+            self._message.setText(catalog.i18nc("@info:status", "Failed to load mesh"))
+            self._message.show()
+            return
+        mesh_data = job_result[0].getMeshData()
+        if not mesh_data:
+            self._message.setText(catalog.i18nc("@info:status", "Mesh contained no data"))
+            self._message.show()
+            return
+        has_merged_nodes = False
+        nodes_list = self._getAllSelectedNodes()
+        for node in nodes_list:
+            if not isinstance(node, CuraSceneNode) or not node.getMeshData():
+                if node.getName() == "MergedMesh":
+                    has_merged_nodes = True
+        for node in nodes_list:
+            node.setMeshData(mesh_data)
+        if has_merged_nodes:
+            CuraApplication.getInstance().updateOriginOfMergedMeshes()
 
     def _replaceSceneNode(self, existing_node, trimeshes):
         name = existing_node.getName()
