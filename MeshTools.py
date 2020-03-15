@@ -210,7 +210,7 @@ class MeshTools(Extension, QObject,):
         if self._node_queue[0].getMeshData() is not None:
             directory = self._node_queue[0].getMeshData().getFileName()
         if not directory:
-            directory = self._application.getDefaultPath("dialog_load_path")
+            directory = self._application.getDefaultPath("dialog_load_path").toLocalFile()
 
         file_name, _ = QFileDialog.getOpenFileName(
             parent=None,
