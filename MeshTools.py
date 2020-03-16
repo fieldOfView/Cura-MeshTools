@@ -28,6 +28,7 @@ from UM.Mesh.ReadMeshJob import ReadMeshJob
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
+from .SetMeshDataAndNameOperation import SetMeshDataAndNameOperation
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
@@ -244,14 +245,18 @@ class MeshTools(Extension, QObject,):
             self._node_queue = [] #type: List[SceneNode]
             return
 
+        mesh_name = os.path.basename(mesh_data.getFileName())
+
         has_merged_nodes = False
 
+        op = GroupedOperation()
         for node in self._node_queue:
-            node.setMeshData(mesh_data)
+            op.addOperation(SetMeshDataAndNameOperation(node, mesh_data, mesh_name))
 
             if not isinstance(node, CuraSceneNode) or not node.getMeshData():
                 if node.getName() == "MergedMesh":
                     has_merged_nodes = True
+        op.push()
 
         if has_merged_nodes:
             self._application.updateOriginOfMergedMeshes()
