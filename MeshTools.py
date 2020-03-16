@@ -1,18 +1,14 @@
 # Copyright (c) 2018 fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot, QObject
 from PyQt5.QtWidgets import QFileDialog
-
-import os
-import sys
-import numpy
-import trimesh
 
 from cura.CuraApplication import CuraApplication
 from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from UM.Message import Message
+from UM.Logger import Logger
 
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
@@ -33,14 +29,22 @@ from .SetMeshDataAndNameOperation import SetMeshDataAndNameOperation
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
 
+import os
+import sys
+import numpy
+import trimesh
+
+from typing import Optional
+
 class MeshTools(Extension, QObject,):
-    def __init__(self, parent = None):
+    def __init__(self, parent = None) -> None:
         QObject.__init__(self, parent)
         Extension.__init__(self)
 
         self._application = CuraApplication.getInstance()
         self._controller = self._application.getController()
 
+        self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
         self._application.fileCompleted.connect(self._onFileCompleted)
         self._controller.getScene().sceneChanged.connect(self._onSceneChanged)
@@ -49,22 +53,50 @@ class MeshTools(Extension, QObject,):
         self._node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+        self._additional_menu = None  # type: Optional[QObject]
 
-    def _onFileLoaded(self, file_name):
+    def _onEngineCreated(self) -> None:
+        # To add items to the ContextMenu, we need access to the QML engine
+        # There is no way to access the context menu directly, so we have to search for it
+        context_menu = None
+        for child in self._application.getMainWindow().contentItem().children():
+            try:
+                test = child.findItemIndex # only ContextMenu has a findItemIndex function
+                context_menu = child
+                break
+            except:
+                pass
+
+        if not context_menu:
+            return
+
+        Logger.log("d", "Inserting item in context menu")
+        context_menu.insertSeparator(0)
+        context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
+
+        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MeshToolsMenu.qml")
+        self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
+        if not self._additional_menu:
+            return
+        # Move additional menu items into context menu
+        # This is handled in QML, because PyQt does not handle QtQuick1 objects very well
+        self._additional_menu.moveToContextMenu(context_menu, 0)
+
+    def _onFileLoaded(self, file_name) -> None:
         self._currently_loading_files.append(file_name)
 
-    def _onFileCompleted(self, file_name):
+    def _onFileCompleted(self, file_name) -> None:
         if file_name in self._currently_loading_files:
             self._currently_loading_files.remove(file_name)
 
-    def _onSceneChanged(self, node):
+    def _onSceneChanged(self, node) -> None:
         if not node or not node.getMeshData():
             return
 
@@ -78,7 +110,7 @@ class MeshTools(Extension, QObject,):
             self._node_queue.append(node)
             self._application.callLater(self.checkQueuedNodes)
 
-    def checkQueuedNodes(self):
+    def checkQueuedNodes(self) -> None:
         for node in self._node_queue:
             tri_node = self._toTriMesh(node.getMeshData())
             if tri_node.is_watertight:
@@ -108,7 +140,7 @@ class MeshTools(Extension, QObject,):
 
         self._node_queue = []
 
-    def _showXRayView(self, message, action):
+    def _showXRayView(self, message, action) -> None:
         try:
             major_api_version = self._application.getAPIVersion().getMajor()
         except AttributeError:
@@ -126,7 +158,7 @@ class MeshTools(Extension, QObject,):
         self._controller.setActiveView("XRayView")
         message.hide()
 
-    def _getAllSelectedNodes(self):
+    def _getAllSelectedNodes(self) -> None:
         self._message.hide()
         selection = Selection.getAllSelectedObjects()[:]
         if selection:
@@ -142,7 +174,8 @@ class MeshTools(Extension, QObject,):
         self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
         self._message.show()
 
-    def checkMeshes(self):
+    @pyqtSlot()
+    def checkMeshes(self) -> None:
         nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
@@ -161,7 +194,8 @@ class MeshTools(Extension, QObject,):
         self._message.setText(message_body)
         self._message.show()
 
-    def fixSimpleHolesForMeshes(self):
+    @pyqtSlot()
+    def fixSimpleHolesForMeshes(self) -> None:
         nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
@@ -174,7 +208,8 @@ class MeshTools(Extension, QObject,):
                 self._message.setText(catalog.i18nc("@info:status", "The mesh needs more extensive repair to become watertight"))
                 self._message.show()
 
-    def fixNormalsForMeshes(self):
+    @pyqtSlot()
+    def fixNormalsForMeshes(self) -> None:
         nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
@@ -184,7 +219,8 @@ class MeshTools(Extension, QObject,):
             tri_node.fix_normals()
             self._replaceSceneNode(node, [tri_node])
 
-    def splitMeshes(self):
+    @pyqtSlot()
+    def splitMeshes(self) -> None:
         nodes_list = self._getAllSelectedNodes()
         if not nodes_list:
             return
@@ -202,7 +238,8 @@ class MeshTools(Extension, QObject,):
         self._message.setText(message_body)
         self._message.show()
 
-    def replaceMeshes(self):
+    @pyqtSlot()
+    def replaceMeshes(self) -> None:
         self._node_queue = self._getAllSelectedNodes()
         if not self._node_queue:
             return
@@ -230,7 +267,7 @@ class MeshTools(Extension, QObject,):
         job.finished.connect(self._readMeshFinished)
         job.start()
 
-    def _readMeshFinished(self, job):
+    def _readMeshFinished(self, job) -> None:
         job_result = job.getResult()
         if len(job_result) == 0:
             self._message.setText(catalog.i18nc("@info:status", "Failed to load mesh"))
@@ -263,7 +300,7 @@ class MeshTools(Extension, QObject,):
 
         self._node_queue = [] #type: List[SceneNode]
 
-    def _replaceSceneNode(self, existing_node, trimeshes):
+    def _replaceSceneNode(self, existing_node, trimeshes) -> None:
         name = existing_node.getName()
         file_name = existing_node.getMeshData().getFileName()
         transformation = existing_node.getWorldTransformation()
