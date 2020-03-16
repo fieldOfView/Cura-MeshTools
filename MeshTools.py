@@ -4,7 +4,8 @@
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QFileDialog
 
-import os.path
+import os
+import sys
 import numpy
 import trimesh
 
@@ -206,7 +207,8 @@ class MeshTools(Extension, QObject,):
             return
 
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
+            options |= QFileDialog.DontUseNativeDialog
         filter_types = ";;".join(self._application.getMeshFileHandler().supportedReadFileTypes)
 
         directory = None
