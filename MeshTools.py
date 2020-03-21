@@ -1,7 +1,7 @@
 # Copyright (c) 2018 fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
-from PyQt5.QtCore import pyqtSlot, pyqtProperty, QObject
+from PyQt5.QtCore import pyqtSlot, QObject
 from PyQt5.QtWidgets import QFileDialog
 
 from cura.CuraApplication import CuraApplication
@@ -10,7 +10,6 @@ from UM.PluginRegistry import PluginRegistry
 from UM.Message import Message
 from UM.Logger import Logger
 
-from UM.Math.Matrix import Matrix
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
