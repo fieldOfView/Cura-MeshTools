@@ -1,7 +1,7 @@
 # Copyright (c) 2018 fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
-from PyQt5.QtCore import pyqtSlot, QObject
+from PyQt5.QtCore import pyqtSlot, pyqtProperty, QObject
 from PyQt5.QtWidgets import QFileDialog
 
 from cura.CuraApplication import CuraApplication
@@ -10,6 +10,7 @@ from UM.PluginRegistry import PluginRegistry
 from UM.Message import Message
 from UM.Logger import Logger
 
+from UM.Math.Matrix import Matrix
 from UM.Scene.Selection import Selection
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
@@ -54,6 +55,7 @@ class MeshTools(Extension, QObject,):
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
@@ -261,6 +263,35 @@ class MeshTools(Extension, QObject,):
             directory=directory, options=options, filter=filter_types
         )
         if not file_name:
+            self._node_queue = [] #type: List[SceneNode]
+            return
+
+        job = ReadMeshJob(file_name)
+        job.finished.connect(self._readMeshFinished)
+        job.start()
+
+    @pyqtSlot()
+    def reloadMesh(self) -> None:
+        self._node_queue = self._getAllSelectedNodes()
+        if not self._node_queue or len(self._node_queue) > 1:
+            self._message.hide()
+            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
+            self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
+            return
+
+        mesh_data = self._node_queue[0].getMeshData()
+        if not mesh_data:
+            self._message.setText(catalog.i18nc("@info:status", "Reloading a group is not supported"))
+            self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
+            return
+
+        file_name = mesh_data.getFileName()
+        if not file_name:
+            self._message.setText(catalog.i18nc("@info:status", "No link to the original file was found"))
+            self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
             return
 
         job = ReadMeshJob(file_name)
@@ -277,7 +308,7 @@ class MeshTools(Extension, QObject,):
 
         mesh_data = job_result[0].getMeshData()
         if not mesh_data:
-            self._message.setText(catalog.i18nc("@info:status", "Mesh contained no data"))
+            self._message.setText(catalog.i18nc("@info:status", "File contained no mesh data"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
