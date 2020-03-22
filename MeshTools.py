@@ -11,6 +11,7 @@ from UM.Message import Message
 from UM.Logger import Logger
 
 from UM.Scene.Selection import Selection
+from UM.Scene.SceneNode import SceneNode
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
@@ -34,7 +35,7 @@ import sys
 import numpy
 import trimesh
 
-from typing import Optional
+from typing import Optional, List
 
 class MeshTools(Extension, QObject,):
     def __init__(self, parent = None) -> None:
