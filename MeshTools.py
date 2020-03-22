@@ -159,11 +159,11 @@ class MeshTools(Extension, QObject,):
         self._controller.setActiveView("XRayView")
         message.hide()
 
-    def _getAllSelectedNodes(self) -> None:
+    def _getAllSelectedNodes(self) -> List[SceneNode]:
         self._message.hide()
         selection = Selection.getAllSelectedObjects()[:]
         if selection:
-            deep_selection = []
+            deep_selection = []  # type: List[SceneNode]
             for selected_node in selection:
                 if selected_node.hasChildren():
                     deep_selection = deep_selection + selected_node.getAllChildren()
@@ -174,6 +174,8 @@ class MeshTools(Extension, QObject,):
 
         self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
         self._message.show()
+
+        return []  # type: List[SceneNode]
 
     @pyqtSlot()
     def checkMeshes(self) -> None:
