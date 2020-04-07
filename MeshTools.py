@@ -56,6 +56,7 @@ class MeshTools(Extension, QObject,):
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
+        self.addMenuItem("", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
