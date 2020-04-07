@@ -349,7 +349,7 @@ class MeshTools(Extension, QObject,):
         op.addOperation(RemoveSceneNodeOperation(existing_node))
 
         for i, tri_node in enumerate(trimeshes):
-            mesh_data = self._toMeshData(tri_node)
+            mesh_data = self._toMeshData(tri_node, file_name)
 
             new_node = CuraSceneNode()
             new_node.setSelectable(True)
@@ -389,7 +389,7 @@ class MeshTools(Extension, QObject,):
 
         return trimesh.base.Trimesh(vertices=mesh_data.getVertices(), faces=indices, vertex_normals=mesh_data.getNormals())
 
-    def _toMeshData(self, tri_node: trimesh.base.Trimesh) -> MeshData:
+    def _toMeshData(self, tri_node: trimesh.base.Trimesh, file_name: str = "") -> MeshData:
         tri_faces = tri_node.faces
         tri_vertices = tri_node.vertices
 
@@ -411,5 +411,5 @@ class MeshTools(Extension, QObject,):
         indices = numpy.asarray(indices, dtype=numpy.int32)
         normals = calculateNormalsFromIndexedVertices(vertices, indices, face_count)
 
-        mesh_data = MeshData(vertices=vertices, indices=indices, normals=normals)
+        mesh_data = MeshData(file_name = file_name, vertices=vertices, indices=indices, normals=normals)
         return mesh_data
