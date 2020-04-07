@@ -54,8 +54,11 @@ class MeshTools(Extension, QObject,):
         self._node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
+        self._rename_dialog = None
+
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
         self.addMenuItem("", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
@@ -272,6 +275,29 @@ class MeshTools(Extension, QObject,):
         job = ReadMeshJob(file_name)
         job.finished.connect(self._readMeshFinished)
         job.start()
+
+    @pyqtSlot()
+    def renameMesh(self) -> None:
+        self._node_queue = self._getAllSelectedNodes()
+        if not self._node_queue or len(self._node_queue) > 1:
+            self._message.hide()
+            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
+            self._message.show()
+            self._node_queue = [] #type: List[SceneNode]
+            return
+
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RenameDialog.qml")
+        self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
+        self._rename_dialog.show()
+        self._rename_dialog.setName(self._node_queue[0].getName())
+        print(self._node_queue[0].getName())
+
+    @pyqtSlot(str)
+    def setSelectedMeshName(self, new_name:str) -> None:
+        node = self._node_queue[0]
+        node.setName(new_name)
+        Selection.remove(node)
+        Selection.add(node)
 
     @pyqtSlot()
     def reloadMesh(self) -> None:

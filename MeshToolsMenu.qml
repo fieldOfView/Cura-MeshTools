@@ -21,6 +21,12 @@ Menu
     }
     MenuItem
     {
+        text: catalog.i18nc("@item:inmenu", "Rename model...")
+        enabled: UM.Selection.selectionCount == 1
+        onTriggered: manager.renameMesh()
+    }
+    MenuItem
+    {
         text: catalog.i18ncp("@item:inmenu", "Replace model...", "Replace models...", UM.Selection.selectionCount)
         enabled: UM.Selection.hasSelection
         onTriggered: manager.replaceMeshes()
