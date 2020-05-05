@@ -1,4 +1,4 @@
-# Copyright (c) 2018 fieldOfView
+# Copyright (c) 2020 fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
 from PyQt5.QtCore import pyqtSlot, QObject
@@ -58,7 +58,7 @@ class MeshTools(Extension, QObject,):
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace model..."), self.replaceMesh)
         self.addMenuItem("", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
@@ -164,6 +164,17 @@ class MeshTools(Extension, QObject,):
         self._controller.setActiveView("XRayView")
         message.hide()
 
+    def _getSelectedNode(self) -> List[SceneNode]:
+        self._message.hide()
+        selection = Selection.getAllSelectedObjects()[:]
+        if len(selection) == 1:
+            return selection[:]
+
+        self._message.setText(catalog.i18nc("@info:status", "Please select a single model first"))
+        self._message.show()
+
+        return []  # type: List[SceneNode]
+
     def _getAllSelectedNodes(self) -> List[SceneNode]:
         self._message.hide()
         selection = Selection.getAllSelectedObjects()[:]
@@ -247,8 +258,8 @@ class MeshTools(Extension, QObject,):
         self._message.show()
 
     @pyqtSlot()
-    def replaceMeshes(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
+    def replaceMesh(self) -> None:
+        self._node_queue = self._getSelectedNode()
         if not self._node_queue:
             return
 
@@ -278,12 +289,8 @@ class MeshTools(Extension, QObject,):
 
     @pyqtSlot()
     def renameMesh(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
-        if not self._node_queue or len(self._node_queue) > 1:
-            self._message.hide()
-            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
-            self._message.show()
-            self._node_queue = [] #type: List[SceneNode]
+        self._node_queue = self._getSelectedNode()
+        if not self._node_queue:
             return
 
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RenameDialog.qml")
@@ -301,12 +308,8 @@ class MeshTools(Extension, QObject,):
 
     @pyqtSlot()
     def reloadMesh(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
-        if not self._node_queue or len(self._node_queue) > 1:
-            self._message.hide()
-            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
-            self._message.show()
-            self._node_queue = [] #type: List[SceneNode]
+        self._node_queue = self._getSelectedNode()
+        if not self._node_queue:
             return
 
         mesh_data = self._node_queue[0].getMeshData()

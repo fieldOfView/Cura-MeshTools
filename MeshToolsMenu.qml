@@ -27,9 +27,9 @@ Menu
     }
     MenuItem
     {
-        text: catalog.i18ncp("@item:inmenu", "Replace model...", "Replace models...", UM.Selection.selectionCount)
+        text: catalog.i18nc("@item:inmenu", "Replace model...")
         enabled: UM.Selection.hasSelection
-        onTriggered: manager.replaceMeshes()
+        onTriggered: manager.replaceMesh()
     }
     MenuSeparator {}
     MenuItem
