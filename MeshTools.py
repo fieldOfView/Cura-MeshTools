@@ -54,7 +54,12 @@ class MeshTools(Extension, QObject,):
         self._node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
+        self._settings_dialog = None
         self._rename_dialog = None
+
+        self._preferences = self._application.getPreferences()
+        self._preferences.addPreference("meshtools/check_models_on_load", True)
+        self._preferences.addPreference("meshtools/fix_normals_on_load", False)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
@@ -64,9 +69,21 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
+        self.addMenuItem(" ", lambda: None)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
         self._additional_menu = None  # type: Optional[QObject]
+
+    def showSettingsDialog(self) -> None:
+        global_container_stack = self._application.getGlobalContainerStack()
+        if not global_container_stack:
+            return
+
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "SettingsDialog.qml")
+
+        self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
+        self._settings_dialog.show()
 
     def _onEngineCreated(self) -> None:
         # To add items to the ContextMenu, we need access to the QML engine
@@ -87,7 +104,7 @@ class MeshTools(Extension, QObject,):
         context_menu.insertSeparator(0)
         context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
 
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MeshToolsMenu.qml")
+        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "MeshToolsMenu.qml")
         self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
         if not self._additional_menu:
             return
@@ -112,37 +129,39 @@ class MeshTools(Extension, QObject,):
 
         # the scene may change multiple times while loading a mesh,
         # but we want to check the mesh only once
-        if node not in self._node_queue:
+        if node not in self._node_queue and (self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load")):
             self._node_queue.append(node)
             self._application.callLater(self.checkQueuedNodes)
 
     def checkQueuedNodes(self) -> None:
         for node in self._node_queue:
             tri_node = self._toTriMesh(node.getMeshData())
-            if tri_node.is_watertight:
-                continue
+            if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
+                file_name = node.getMeshData().getFileName()
+                base_name = os.path.basename(file_name)
 
-            file_name = node.getMeshData().getFileName()
-            base_name = os.path.basename(file_name)
+                if file_name in self._mesh_not_watertight_messages:
+                    self._mesh_not_watertight_messages[file_name].hide()
 
-            if file_name in self._mesh_not_watertight_messages:
-                self._mesh_not_watertight_messages[file_name].hide()
+                message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+                body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
 
-            message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
-            body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
+                # XRayView may not be available if the plugin has been disabled
+                if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
+                    body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
+                    message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
+                    message.actionTriggered.connect(self._showXRayView)
+                else:
+                    body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
 
-            # XRayView may not be available if the plugin has been disabled
-            if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
-                body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
-                message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
-                message.actionTriggered.connect(self._showXRayView)
-            else:
-                body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
+                message.setText(body)
+                message.show()
 
-            message.setText(body)
-            message.show()
+                self._mesh_not_watertight_messages[file_name] = message
 
-            self._mesh_not_watertight_messages[file_name] = message
+            if self._preferences.getValue("meshtools/fix_normals_on_load") and tri_node.is_watertight:
+                tri_node.fix_normals()
+                self._replaceSceneNode(node, [tri_node])
 
         self._node_queue = []
 
@@ -299,7 +318,7 @@ class MeshTools(Extension, QObject,):
         if not self._node_queue:
             return
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RenameDialog.qml")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "RenameDialog.qml")
         self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
         self._rename_dialog.show()
         self._rename_dialog.setName(self._node_queue[0].getName())
