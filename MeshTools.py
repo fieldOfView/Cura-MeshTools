@@ -15,6 +15,7 @@ from UM.Scene.SceneNode import SceneNode
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
+from UM.Operations.SetTransformOperation import SetTransformOperation
 from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
@@ -22,6 +23,7 @@ from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
 from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
 from UM.Mesh.ReadMeshJob import ReadMeshJob
+from UM.Math.Vector import Vector
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
@@ -34,6 +36,7 @@ import os
 import sys
 import numpy
 import trimesh
+import random
 
 from typing import Optional, List
 
@@ -70,16 +73,14 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
         self.addMenuItem(" ", lambda: None)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
+        self.addMenuItem("  ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
         self._additional_menu = None  # type: Optional[QObject]
 
     def showSettingsDialog(self) -> None:
-        global_container_stack = self._application.getGlobalContainerStack()
-        if not global_container_stack:
-            return
-
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "SettingsDialog.qml")
 
         self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
@@ -387,6 +388,31 @@ class MeshTools(Extension, QObject,):
             self._application.updateOriginOfMergedMeshes()
 
         self._node_queue = [] #type: List[SceneNode]
+
+    @pyqtSlot()
+    def randomiseMeshLocation(self) -> None:
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+
+        global_container_stack = self._application.getGlobalContainerStack()
+        if not global_container_stack:
+            return
+
+        disallowed_edge = self._application.getBuildVolume().getEdgeDisallowedSize() + 2  # Allow for some rounding errors
+        max_x_coordinate = (global_container_stack.getProperty("machine_width", "value") / 2) - disallowed_edge
+        max_y_coordinate = (global_container_stack.getProperty("machine_depth", "value") / 2) - disallowed_edge
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            node_bounds = node.getBoundingBox()
+            position = Vector(
+                (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),
+                node_bounds.height / 2,
+                (2 * random.random() - 1) * (max_y_coordinate - (node_bounds.depth / 2))
+            )
+            op.addOperation(SetTransformOperation(node, translation=position))
+        op.push()
 
     def _replaceSceneNode(self, existing_node, trimeshes) -> None:
         name = existing_node.getName()

@@ -56,6 +56,13 @@ Menu
         enabled: UM.Selection.hasSelection
         onTriggered: manager.splitMeshes()
     }
+    MenuSeparator {}
+    MenuItem
+    {
+        text: catalog.i18nc("@item:inmenu", "Randomise location")
+        enabled: UM.Selection.hasSelection
+        onTriggered: manager.randomiseMeshLocation()
+    }
 
     function moveToContextMenu(contextMenu, itemIndex)
     {
