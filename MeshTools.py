@@ -63,6 +63,7 @@ class MeshTools(Extension, QObject,):
         self._preferences = self._application.getPreferences()
         self._preferences.addPreference("meshtools/check_models_on_load", True)
         self._preferences.addPreference("meshtools/fix_normals_on_load", False)
+        self._preferences.addPreference("meshtools/randomise_location_on_load", False)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
@@ -129,14 +130,30 @@ class MeshTools(Extension, QObject,):
             return
 
         # the scene may change multiple times while loading a mesh,
-        # but we want to check the mesh only once
-        if node not in self._node_queue and (self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load")):
+        # but we want to process the mesh only once
+        if node not in self._node_queue:
             self._node_queue.append(node)
             self._application.callLater(self.checkQueuedNodes)
 
     def checkQueuedNodes(self) -> None:
+        global_container_stack = self._application.getGlobalContainerStack()
+        if global_container_stack:
+            disallowed_edge = self._application.getBuildVolume().getEdgeDisallowedSize() + 2  # Allow for some rounding errors
+            max_x_coordinate = (global_container_stack.getProperty("machine_width", "value") / 2) - disallowed_edge
+            max_y_coordinate = (global_container_stack.getProperty("machine_depth", "value") / 2) - disallowed_edge
+
         for node in self._node_queue:
-            tri_node = self._toTriMesh(node.getMeshData())
+            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
+                file_name = node.getMeshData().getFileName()
+
+                if os.path.splitext(file_name)[1].lower() != ".3mf": # don't randomise project files
+                    node_bounds = node.getBoundingBox()
+                    position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                    node.setPosition(position)
+
+            if self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load"):
+                tri_node = self._toTriMesh(node.getMeshData())
+
             if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
                 file_name = node.getMeshData().getFileName()
                 base_name = os.path.basename(file_name)
@@ -406,13 +423,16 @@ class MeshTools(Extension, QObject,):
         op = GroupedOperation()
         for node in nodes_list:
             node_bounds = node.getBoundingBox()
-            position = Vector(
-                (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),
-                node_bounds.height / 2,
-                (2 * random.random() - 1) * (max_y_coordinate - (node_bounds.depth / 2))
-            )
+            position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
             op.addOperation(SetTransformOperation(node, translation=position))
         op.push()
+
+    def _randomLocation(self, node_bounds, max_x_coordinate, max_y_coordinate):
+        return Vector(
+            (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),
+            node_bounds.height / 2,
+            (2 * random.random() - 1) * (max_y_coordinate - (node_bounds.depth / 2))
+        )
 
     def _replaceSceneNode(self, existing_node, trimeshes) -> None:
         name = existing_node.getName()

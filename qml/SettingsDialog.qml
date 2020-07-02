@@ -71,6 +71,23 @@ UM.Dialog
                 onCheckedChanged: UM.Preferences.setValue("meshtools/fix_normals_on_load", checked)
             }
         }
+
+        // spacer
+        Item { height: UM.Theme.getSize("default_margin").height; width: 1 }
+
+        UM.TooltipArea
+        {
+            width: childrenRect.width
+            height: childrenRect.height
+            text: catalog.i18nc("@info:tooltip", "Place models at a random location on the build plate when loading them")
+
+            CheckBox
+            {
+                text: catalog.i18nc("@option:check", "Randomize position on load")
+                checked: boolCheck(UM.Preferences.getValue("meshtools/randomise_location_on_load"))
+                onCheckedChanged: UM.Preferences.setValue("meshtools/randomise_location_on_load", checked)
+            }
+        }
     }
 
     rightButtons: [
