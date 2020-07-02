@@ -24,6 +24,7 @@ from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
 from UM.Mesh.ReadMeshJob import ReadMeshJob
 from UM.Math.Vector import Vector
+from UM.Math.Matrix import Matrix
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
@@ -75,6 +76,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
         self.addMenuItem(" ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
         self.addMenuItem("  ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
@@ -433,6 +435,30 @@ class MeshTools(Extension, QObject,):
             node_bounds.height / 2,
             (2 * random.random() - 1) * (max_y_coordinate - (node_bounds.depth / 2))
         )
+
+    @pyqtSlot()
+    def bakeMeshTransformation(self) -> None:
+        nodes_list = self._getSelectedNodes()
+        if not nodes_list:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            mesh_data = node.getMeshData()
+            mesh_name = os.path.basename(mesh_data.getFileName())
+
+            local_transformation = node.getLocalTransformation(copy=True)
+            position = local_transformation.getTranslation()
+            local_transformation.setTranslation(Vector(0,0,0))
+            transformed_mesh_data = mesh_data.getTransformed(local_transformation)
+            new_transformation = Matrix()
+            new_transformation.setTranslation(position)
+
+            op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, mesh_name))
+            op.addOperation(SetTransformMatrixOperation(node, new_transformation))
+
+        op.push()
+
 
     def _replaceSceneNode(self, existing_node, trimeshes) -> None:
         name = existing_node.getName()
