@@ -1,4 +1,4 @@
-# Copyright (c) 2018 fieldOfView
+# Copyright (c) 2020 fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
 from PyQt5.QtCore import pyqtSlot, QObject
@@ -15,6 +15,7 @@ from UM.Scene.SceneNode import SceneNode
 from UM.Operations.GroupedOperation import GroupedOperation
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
+from UM.Operations.SetTransformOperation import SetTransformOperation
 from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
@@ -22,6 +23,8 @@ from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
 from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
 from UM.Mesh.ReadMeshJob import ReadMeshJob
+from UM.Math.Vector import Vector
+from UM.Math.Matrix import Matrix
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
@@ -34,6 +37,7 @@ import os
 import sys
 import numpy
 import trimesh
+import random
 
 from typing import Optional, List
 
@@ -54,7 +58,13 @@ class MeshTools(Extension, QObject,):
         self._node_queue = [] #type: List[SceneNode]
         self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
 
+        self._settings_dialog = None
         self._rename_dialog = None
+
+        self._preferences = self._application.getPreferences()
+        self._preferences.addPreference("meshtools/check_models_on_load", True)
+        self._preferences.addPreference("meshtools/fix_normals_on_load", False)
+        self._preferences.addPreference("meshtools/randomise_location_on_load", False)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
@@ -64,9 +74,20 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
+        self.addMenuItem(" ", lambda: None)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
+        self.addMenuItem("  ", lambda: None)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
         self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
         self._additional_menu = None  # type: Optional[QObject]
+
+    def showSettingsDialog(self) -> None:
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "SettingsDialog.qml")
+
+        self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
+        self._settings_dialog.show()
 
     def _onEngineCreated(self) -> None:
         # To add items to the ContextMenu, we need access to the QML engine
@@ -87,7 +108,7 @@ class MeshTools(Extension, QObject,):
         context_menu.insertSeparator(0)
         context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
 
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MeshToolsMenu.qml")
+        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "MeshToolsMenu.qml")
         self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
         if not self._additional_menu:
             return
@@ -111,38 +132,56 @@ class MeshTools(Extension, QObject,):
             return
 
         # the scene may change multiple times while loading a mesh,
-        # but we want to check the mesh only once
+        # but we want to process the mesh only once
         if node not in self._node_queue:
             self._node_queue.append(node)
             self._application.callLater(self.checkQueuedNodes)
 
     def checkQueuedNodes(self) -> None:
+        global_container_stack = self._application.getGlobalContainerStack()
+        if global_container_stack:
+            disallowed_edge = self._application.getBuildVolume().getEdgeDisallowedSize() + 2  # Allow for some rounding errors
+            max_x_coordinate = (global_container_stack.getProperty("machine_width", "value") / 2) - disallowed_edge
+            max_y_coordinate = (global_container_stack.getProperty("machine_depth", "value") / 2) - disallowed_edge
+
         for node in self._node_queue:
-            tri_node = self._toTriMesh(node.getMeshData())
-            if tri_node.is_watertight:
-                continue
+            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
+                file_name = node.getMeshData().getFileName()
 
-            file_name = node.getMeshData().getFileName()
-            base_name = os.path.basename(file_name)
+                if os.path.splitext(file_name)[1].lower() != ".3mf": # don't randomise project files
+                    node_bounds = node.getBoundingBox()
+                    position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                    node.setPosition(position)
 
-            if file_name in self._mesh_not_watertight_messages:
-                self._mesh_not_watertight_messages[file_name].hide()
+            if self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load"):
+                tri_node = self._toTriMesh(node.getMeshData())
 
-            message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
-            body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
+            if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
+                file_name = node.getMeshData().getFileName()
+                base_name = os.path.basename(file_name)
 
-            # XRayView may not be available if the plugin has been disabled
-            if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
-                body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
-                message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
-                message.actionTriggered.connect(self._showXRayView)
-            else:
-                body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
+                if file_name in self._mesh_not_watertight_messages:
+                    self._mesh_not_watertight_messages[file_name].hide()
 
-            message.setText(body)
-            message.show()
+                message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+                body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
 
-            self._mesh_not_watertight_messages[file_name] = message
+                # XRayView may not be available if the plugin has been disabled
+                if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
+                    body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
+                    message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
+                    message.actionTriggered.connect(self._showXRayView)
+                else:
+                    body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
+
+                message.setText(body)
+                message.show()
+
+                self._mesh_not_watertight_messages[file_name] = message
+
+            if self._preferences.getValue("meshtools/fix_normals_on_load") and tri_node.is_watertight:
+                tri_node.fix_normals()
+                self._replaceSceneNode(node, [tri_node])
 
         self._node_queue = []
 
@@ -163,6 +202,23 @@ class MeshTools(Extension, QObject,):
 
         self._controller.setActiveView("XRayView")
         message.hide()
+
+    def _getSelectedNodes(self, force_single = False) -> List[SceneNode]:
+        self._message.hide()
+        selection = Selection.getAllSelectedObjects()[:]
+        if force_single:
+            if len(selection) == 1:
+                return selection[:]
+
+            self._message.setText(catalog.i18nc("@info:status", "Please select a single model first"))
+        else:
+            if len(selection) >= 1:
+                return selection[:]
+
+            self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
+
+        self._message.show()
+        return []  # type: List[SceneNode]
 
     def _getAllSelectedNodes(self) -> List[SceneNode]:
         self._message.hide()
@@ -248,7 +304,7 @@ class MeshTools(Extension, QObject,):
 
     @pyqtSlot()
     def replaceMeshes(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
+        self._node_queue = self._getSelectedNodes()
         if not self._node_queue:
             return
 
@@ -278,15 +334,11 @@ class MeshTools(Extension, QObject,):
 
     @pyqtSlot()
     def renameMesh(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
-        if not self._node_queue or len(self._node_queue) > 1:
-            self._message.hide()
-            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
-            self._message.show()
-            self._node_queue = [] #type: List[SceneNode]
+        self._node_queue = self._getSelectedNodes(force_single=True)
+        if not self._node_queue:
             return
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RenameDialog.qml")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "RenameDialog.qml")
         self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
         self._rename_dialog.show()
         self._rename_dialog.setName(self._node_queue[0].getName())
@@ -301,12 +353,8 @@ class MeshTools(Extension, QObject,):
 
     @pyqtSlot()
     def reloadMesh(self) -> None:
-        self._node_queue = self._getAllSelectedNodes()
-        if not self._node_queue or len(self._node_queue) > 1:
-            self._message.hide()
-            self._message.setText(catalog.i18nc("@info:status", "Please select a single model"))
-            self._message.show()
-            self._node_queue = [] #type: List[SceneNode]
+        self._node_queue = self._getSelectedNodes(force_single=True)
+        if not self._node_queue:
             return
 
         mesh_data = self._node_queue[0].getMeshData()
@@ -359,6 +407,58 @@ class MeshTools(Extension, QObject,):
             self._application.updateOriginOfMergedMeshes()
 
         self._node_queue = [] #type: List[SceneNode]
+
+    @pyqtSlot()
+    def randomiseMeshLocation(self) -> None:
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+
+        global_container_stack = self._application.getGlobalContainerStack()
+        if not global_container_stack:
+            return
+
+        disallowed_edge = self._application.getBuildVolume().getEdgeDisallowedSize() + 2  # Allow for some rounding errors
+        max_x_coordinate = (global_container_stack.getProperty("machine_width", "value") / 2) - disallowed_edge
+        max_y_coordinate = (global_container_stack.getProperty("machine_depth", "value") / 2) - disallowed_edge
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            node_bounds = node.getBoundingBox()
+            position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+            op.addOperation(SetTransformOperation(node, translation=position))
+        op.push()
+
+    def _randomLocation(self, node_bounds, max_x_coordinate, max_y_coordinate):
+        return Vector(
+            (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),
+            node_bounds.height / 2,
+            (2 * random.random() - 1) * (max_y_coordinate - (node_bounds.depth / 2))
+        )
+
+    @pyqtSlot()
+    def bakeMeshTransformation(self) -> None:
+        nodes_list = self._getSelectedNodes()
+        if not nodes_list:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            mesh_data = node.getMeshData()
+            mesh_name = os.path.basename(mesh_data.getFileName())
+
+            local_transformation = node.getLocalTransformation(copy=True)
+            position = local_transformation.getTranslation()
+            local_transformation.setTranslation(Vector(0,0,0))
+            transformed_mesh_data = mesh_data.getTransformed(local_transformation)
+            new_transformation = Matrix()
+            new_transformation.setTranslation(position)
+
+            op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, mesh_name))
+            op.addOperation(SetTransformMatrixOperation(node, new_transformation))
+
+        op.push()
+
 
     def _replaceSceneNode(self, existing_node, trimeshes) -> None:
         name = existing_node.getName()
