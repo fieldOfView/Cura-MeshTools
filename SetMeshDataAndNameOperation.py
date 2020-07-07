@@ -11,7 +11,7 @@ class SetMeshDataAndNameOperation(Operation):
     #
     #   \param node The scene node to transform.
     #   \param transform A fully formed transformation matrix to transform the node with.
-    def __init__(self, node: SceneNode, mesh_data: MeshData, name: str = ""):
+    def __init__(self, node: SceneNode, mesh_data: MeshData, name: str = "") -> None:
         super().__init__()
 
         self._node = node
@@ -26,13 +26,13 @@ class SetMeshDataAndNameOperation(Operation):
             self.redo()
 
     ##  Undoes the mesh data change, restoring the node to the old state.
-    def undo(self):
+    def undo(self) -> None:
 
         self._node.setMeshData(self._old_mesh_data)
         self._node.setName(self._old_name)
 
     ##  Re-applies the mesh data change after it has been undone.
-    def redo(self):
+    def redo(self) -> None:
 
         self._node.setMeshData(self._new_mesh_data)
         self._node.setName(self._new_name)
@@ -65,5 +65,5 @@ class SetMeshDataAndNameOperation(Operation):
     ##  Returns a programmer-readable representation of this operation.
     #
     #   A programmer-readable representation of this operation.
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "SetMeshDataAndNameOperation(node = {0})".format(self._node)

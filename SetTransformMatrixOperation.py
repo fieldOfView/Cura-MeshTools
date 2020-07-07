@@ -11,7 +11,7 @@ class SetTransformMatrixOperation(SetTransformOperation):
     #
     #   \param node The scene node to transform.
     #   \param transform A fully formed transformation matrix to transform the node with.
-    def __init__(self, node, transform = None):
+    def __init__(self, node, transform = None) -> None:
         super().__init__(node)
 
         self._old_transformation = node.getWorldTransformation()
@@ -42,5 +42,5 @@ class SetTransformMatrixOperation(SetTransformOperation):
     ##  Returns a programmer-readable representation of this operation.
     #
     #   A programmer-readable representation of this operation.
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "SetTransformMatrixOperation(node = {0})".format(self._node)

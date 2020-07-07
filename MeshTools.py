@@ -39,7 +39,7 @@ import numpy
 import trimesh
 import random
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 class MeshTools(Extension, QObject,):
     def __init__(self, parent = None) -> None:
@@ -87,13 +87,18 @@ class MeshTools(Extension, QObject,):
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "SettingsDialog.qml")
 
         self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
-        self._settings_dialog.show()
+        if self._settings_dialog:
+            self._settings_dialog.show()
 
     def _onEngineCreated(self) -> None:
         # To add items to the ContextMenu, we need access to the QML engine
         # There is no way to access the context menu directly, so we have to search for it
+        main_window = self._application.getMainWindow()
+        if not main_window:
+            return
+
         context_menu = None
-        for child in self._application.getMainWindow().contentItem().children():
+        for child in main_window.contentItem().children():
             try:
                 test = child.findItemIndex # only ContextMenu has a findItemIndex function
                 context_menu = child
@@ -145,19 +150,25 @@ class MeshTools(Extension, QObject,):
             max_y_coordinate = (global_container_stack.getProperty("machine_depth", "value") / 2) - disallowed_edge
 
         for node in self._node_queue:
-            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
-                file_name = node.getMeshData().getFileName()
+            mesh_data = node.getMeshData()
+            if not mesh_data:
+                continue
+            file_name = mesh_data.getFileName()
 
-                if os.path.splitext(file_name)[1].lower() != ".3mf": # don't randomise project files
-                    node_bounds = node.getBoundingBox()
-                    position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
-                    node.setPosition(position)
+            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
+                if file_name and os.path.splitext(file_name)[1].lower() == ".3mf": # don't randomise project files
+                    continue
+
+                node_bounds = node.getBoundingBox()
+                position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                node.setPosition(position)
 
             if self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load"):
-                tri_node = self._toTriMesh(node.getMeshData())
+                tri_node = self._toTriMesh(mesh_data)
 
             if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
-                file_name = node.getMeshData().getFileName()
+                if not file_name:
+                    file_name = catalog.i18nc("@text Print job name", "Untitled")
                 base_name = os.path.basename(file_name)
 
                 if file_name in self._mesh_not_watertight_messages:
@@ -167,9 +178,10 @@ class MeshTools(Extension, QObject,):
                 body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
 
                 # XRayView may not be available if the plugin has been disabled
-                if "XRayView" in self._controller.getAllViews() and self._controller.getActiveView().getPluginId() != "XRayView":
+                active_view = self._controller.getActiveView()
+                if active_view and "XRayView" in self._controller.getAllViews() and active_view.getPluginId() != "XRayView":
                     body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
-                    message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), None, "")
+                    message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), "", "")
                     message.actionTriggered.connect(self._showXRayView)
                 else:
                     body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
@@ -218,7 +230,7 @@ class MeshTools(Extension, QObject,):
             self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
 
         self._message.show()
-        return []  # type: List[SceneNode]
+        return []
 
     def _getAllSelectedNodes(self) -> List[SceneNode]:
         self._message.hide()
@@ -236,7 +248,7 @@ class MeshTools(Extension, QObject,):
         self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
         self._message.show()
 
-        return []  # type: List[SceneNode]
+        return []
 
     @pyqtSlot()
     def checkMeshes(self) -> None:
@@ -313,9 +325,10 @@ class MeshTools(Extension, QObject,):
             options |= QFileDialog.DontUseNativeDialog
         filter_types = ";;".join(self._application.getMeshFileHandler().supportedReadFileTypes)
 
-        directory = None
-        if self._node_queue[0].getMeshData() is not None:
-            directory = self._node_queue[0].getMeshData().getFileName()
+        directory = None  # type: Optional[str]
+        mesh_data = self._node_queue[0].getMeshData()
+        if mesh_data:
+            directory = mesh_data.getFileName()
         if not directory:
             directory = self._application.getDefaultPath("dialog_load_path").toLocalFile()
 
@@ -340,9 +353,10 @@ class MeshTools(Extension, QObject,):
 
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "RenameDialog.qml")
         self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
+        if not self._rename_dialog:
+            return
         self._rename_dialog.show()
         self._rename_dialog.setName(self._node_queue[0].getName())
-        print(self._node_queue[0].getName())
 
     @pyqtSlot(str)
     def setSelectedMeshName(self, new_name:str) -> None:
@@ -404,7 +418,7 @@ class MeshTools(Extension, QObject,):
         op.push()
 
         if has_merged_nodes:
-            self._application.updateOriginOfMergedMeshes()
+            self._application.updateOriginOfMergedMeshes(None)
 
         self._node_queue = [] #type: List[SceneNode]
 
@@ -445,9 +459,16 @@ class MeshTools(Extension, QObject,):
         op = GroupedOperation()
         for node in nodes_list:
             mesh_data = node.getMeshData()
-            mesh_name = os.path.basename(mesh_data.getFileName())
+            if not mesh_data:
+                continue
+            file_name = mesh_data.getFileName()
+            if not file_name:
+                file_name = ""
+            mesh_name = os.path.basename(file_name)
+            if not mesh_name:
+                mesh_name = catalog.i18nc("@text Print job name", "Untitled")
 
-            local_transformation = node.getLocalTransformation(copy=True)
+            local_transformation = node.getLocalTransformation()
             position = local_transformation.getTranslation()
             local_transformation.setTranslation(Vector(0,0,0))
             transformed_mesh_data = mesh_data.getTransformed(local_transformation)
@@ -495,11 +516,22 @@ class MeshTools(Extension, QObject,):
                 Selection.add(new_node)
 
         for child in children:
-            child_bounding_box = child.getMeshData().getTransformed(child.getWorldTransformation()).getExtents()
+            mesh_data = child.getMeshData()
+            if not mesh_data:
+                continue
+            child_bounding_box = mesh_data.getTransformed(child.getWorldTransformation()).getExtents()
+            if not child_bounding_box:
+                continue
             new_parent = None
             for potential_parent in new_nodes:
-                parent_bounding_box = potential_parent.getMeshData().getTransformed(potential_parent.getWorldTransformation()).getExtents()
-                if child_bounding_box.intersectsBox(parent_bounding_box) != AxisAlignedBox.IntersectionResult.NoIntersection:
+                parent_mesh_data = potential_parent.getMeshData()
+                if not parent_mesh_data:
+                    continue
+                parent_bounding_box = parent_mesh_data.getTransformed(potential_parent.getWorldTransformation()).getExtents()
+                if not parent_bounding_box:
+                    continue
+                intersection = child_bounding_box.intersectsBox(parent_bounding_box)
+                if intersection != AxisAlignedBox.IntersectionResult.NoIntersection:
                     new_parent = potential_parent
                     break
             if not new_parent:
@@ -508,7 +540,10 @@ class MeshTools(Extension, QObject,):
 
         op.push()
 
-    def _toTriMesh(self, mesh_data: MeshData) -> trimesh.base.Trimesh:
+    def _toTriMesh(self, mesh_data: Optional[MeshData]) -> trimesh.base.Trimesh:
+        if not mesh_data:
+            return trimesh.base.Trimesh()
+
         indices = mesh_data.getIndices()
         if indices is None:
             # some file formats (eg 3mf) don't supply indices, but have unique vertices per face
