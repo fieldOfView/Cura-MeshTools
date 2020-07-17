@@ -2,8 +2,11 @@
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
 from UM.Operations.SetTransformOperation import SetTransformOperation
+from UM.Operations.Operation import Operation
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
+
+from typing import Union
 
 ##  Operation that translates, rotates and scales a node all at once.
 class SetTransformMatrixOperation(SetTransformOperation):
@@ -28,7 +31,7 @@ class SetTransformMatrixOperation(SetTransformOperation):
     #   \param other The older operation with which to merge this operation.
     #   \return A combination of the two operations, or False if the merge
     #   failed.
-    def mergeWith(self, other):
+    def mergeWith(self, other) -> Union[Operation, bool]:
         if type(other) is not SetTransformMatrixOperation:
             return False
         if other._node != self._node: # Must be on the same node.

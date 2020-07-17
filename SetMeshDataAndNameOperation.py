@@ -5,6 +5,8 @@ from UM.Operations.Operation import Operation
 from UM.Mesh.MeshData import MeshData
 from UM.Scene.SceneNode import SceneNode
 
+from typing import Union
+
 ##  Operation that replaces the meshdata of a node.
 class SetMeshDataAndNameOperation(Operation):
     ##  Creates the transform operation.
@@ -48,7 +50,7 @@ class SetMeshDataAndNameOperation(Operation):
     #   \param other The older operation with which to merge this operation.
     #   \return A combination of the two operations, or False if the merge
     #   failed.
-    def mergeWith(self, other):
+    def mergeWith(self, other) -> Union[Operation, bool]:
         if type(other) is not SetMeshDataAndNameOperation:
             return False
         if other._node != self._node: # Must be on the same node.
