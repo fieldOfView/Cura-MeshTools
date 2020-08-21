@@ -40,6 +40,12 @@ Menu
     }
     MenuItem
     {
+        text: catalog.i18ncp("@item:inmenu", "Analyse mesh", "Analyse meshes", UM.Selection.selectionCount)
+        enabled: UM.Selection.hasSelection
+        onTriggered: manager.analyseMeshes()
+    }
+    MenuItem
+    {
         text: catalog.i18nc("@item:inmenu", "Fix simple holes")
         enabled: UM.Selection.hasSelection
         onTriggered: manager.fixSimpleHolesForMeshes()

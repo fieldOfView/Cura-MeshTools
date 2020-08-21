@@ -71,6 +71,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
         self.addMenuItem("", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Analyse models"), self.analyseMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
@@ -266,6 +267,23 @@ class MeshTools(Extension, QObject,):
                 message_body = message_body + " " + catalog.i18nc("@info:status", "is not watertight and may not print properly")
             if tri_node.body_count > 1:
                 message_body = message_body + " " + catalog.i18nc("@info:status", "and consists of {body_count} submeshes").format(body_count = tri_node.body_count)
+
+        self._message.setText(message_body)
+        self._message.show()
+
+    @pyqtSlot()
+    def analyseMeshes(self) -> None:
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+
+        message_body = catalog.i18nc("@info:status", "Analysis summary:")
+        for node in nodes_list:
+            tri_node = self._toTriMesh(node.getMeshDataTransformed())
+            message_body = message_body + "\n - %s:" % node.getName()
+            message_body += "\n\t" + "%d vertices, %d faces" % (len(tri_node.vertices), len(tri_node.faces))
+            if tri_node.is_watertight:
+                message_body += "\n\t" + "area: %d mm2, volume: %d mm3" % (tri_node.area, tri_node.volume)
 
         self._message.setText(message_body)
         self._message.show()
