@@ -66,6 +66,7 @@ class MeshTools(Extension, QObject,):
         self._preferences.addPreference("meshtools/check_models_on_load", True)
         self._preferences.addPreference("meshtools/fix_normals_on_load", False)
         self._preferences.addPreference("meshtools/randomise_location_on_load", False)
+        self._preferences.addPreference("meshtools/model_unit_factor", 1)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
@@ -166,8 +167,24 @@ class MeshTools(Extension, QObject,):
                 position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
                 node.setPosition(position)
 
-            if self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load"):
+            if (
+                self._preferences.getValue("meshtools/check_models_on_load") or
+                self._preferences.getValue("meshtools/fix_normals_on_load") or
+                self._preferences.getValue("meshtools/model_unit_factor") != 1
+            ):
+
                 tri_node = self._toTriMesh(mesh_data)
+
+            if self._preferences.getValue("meshtools/model_unit_factor") != 1:
+                if file_name and os.path.splitext(file_name)[1].lower() not in [".stl", ".obj", ".ply"]:
+                    # only resize models that don't have an intrinsic unit set
+                    continue
+
+                scale_matrix = Matrix()
+                scale_matrix.setByScaleFactor(float(self._preferences.getValue("meshtools/model_unit_factor")))
+                tri_node.apply_transform(scale_matrix.getData())
+
+                self._replaceSceneNode(node, [tri_node])
 
             if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
                 if not file_name:
