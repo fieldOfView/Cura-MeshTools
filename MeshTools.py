@@ -38,6 +38,7 @@ import sys
 import numpy
 import trimesh
 import random
+import copy
 
 from typing import Optional, List, Dict
 
@@ -78,6 +79,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(" ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Reset origin to center of mesh"), self.resetMeshOrigin)
         self.addMenuItem("  ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
@@ -479,12 +481,14 @@ class MeshTools(Extension, QObject,):
             mesh_data = node.getMeshData()
             if not mesh_data:
                 continue
-            file_name = mesh_data.getFileName()
-            if not file_name:
-                file_name = ""
-            mesh_name = os.path.basename(file_name)
+            mesh_name = node.getName()
             if not mesh_name:
-                mesh_name = catalog.i18nc("@text Print job name", "Untitled")
+                file_name = mesh_data.getFileName()
+                if not file_name:
+                    file_name = ""
+                mesh_name = os.path.basename(file_name)
+                if not mesh_name:
+                    mesh_name = catalog.i18nc("@text Print job name", "Untitled")
 
             local_transformation = node.getLocalTransformation()
             position = local_transformation.getTranslation()
@@ -494,6 +498,34 @@ class MeshTools(Extension, QObject,):
             new_transformation.setTranslation(position)
 
             op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, mesh_name))
+            op.addOperation(SetTransformMatrixOperation(node, new_transformation))
+
+        op.push()
+
+
+    @pyqtSlot()
+    def resetMeshOrigin(self) -> None:
+        nodes_list = self._getSelectedNodes()
+        if not nodes_list:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            mesh_data = node.getMeshData()
+            if not mesh_data:
+                continue
+
+            extents = mesh_data.getExtents()
+            center = Vector(extents.center.x, extents.center.y, extents.center.z)
+
+            translation = Matrix()
+            translation.setByTranslation(-center)
+            transformed_mesh_data = mesh_data.getTransformed(translation).set(zero_position=Vector())
+
+            new_transformation = node.getLocalTransformation().copy()
+            new_transformation.translate(center)
+
+            op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, node.getName()))
             op.addOperation(SetTransformMatrixOperation(node, new_transformation))
 
         op.push()

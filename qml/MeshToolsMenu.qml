@@ -75,6 +75,12 @@ Menu
         enabled: UM.Selection.hasSelection
         onTriggered: manager.bakeMeshTransformation()
     }
+    MenuItem
+    {
+        text: catalog.i18nc("@item:inmenu", "Reset origin to center of mesh")
+        enabled: UM.Selection.hasSelection
+        onTriggered: manager.resetMeshOrigin()
+    }
 
     function moveToContextMenu(contextMenu, itemIndex)
     {
