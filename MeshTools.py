@@ -441,7 +441,11 @@ class MeshTools(Extension, QObject,):
             self._node_queue = [] #type: List[SceneNode]
             return
 
-        mesh_name = os.path.basename(mesh_data.getFileName())
+        file_name = mesh_data.getFileName()
+        if file_name:
+            mesh_name = os.path.basename(file_name)
+        else:
+            mesh_name = catalog.i18nc("@text Print job name", "Untitled")
 
         has_merged_nodes = False
 
