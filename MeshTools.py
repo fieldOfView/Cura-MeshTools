@@ -357,6 +357,14 @@ class MeshTools(Extension, QObject,):
         if not self._node_queue:
             return
 
+        for node in self._node_queue:
+            mesh_data = node.getMeshData()
+            if not mesh_data:
+                self._message.setText(catalog.i18nc("@info:status", "Replacing a group is not supported"))
+                self._message.show()
+                self._node_queue = [] #type: List[SceneNode]
+                return
+
         options = QFileDialog.Options()
         if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
             options |= QFileDialog.DontUseNativeDialog
