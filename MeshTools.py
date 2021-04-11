@@ -444,7 +444,7 @@ class MeshTools(Extension, QObject,):
 
         mesh_data = job_result[0].getMeshData()
         if not mesh_data:
-            self._message.setText(catalog.i18nc("@info:status", "File contained no mesh data"))
+            self._message.setText(catalog.i18nc("@info:status", "Replacing meshes with a group of meshes is not supported"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
