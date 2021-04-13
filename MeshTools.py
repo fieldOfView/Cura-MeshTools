@@ -551,7 +551,7 @@ class MeshTools(Extension, QObject,):
             translation.setByTranslation(-center)
             transformed_mesh_data = mesh_data.getTransformed(translation).set(zero_position=Vector())
 
-            new_transformation = node.getLocalTransformation().copy()
+            new_transformation = Matrix(node.getLocalTransformation().getData())  # Matrix.copy() is not available in Cura 3.5-4.0
             new_transformation.translate(center)
 
             op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, node.getName()))
