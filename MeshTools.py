@@ -38,6 +38,7 @@ import sys
 import numpy
 import trimesh
 import random
+import copy
 
 from typing import Optional, List, Dict
 
@@ -65,6 +66,7 @@ class MeshTools(Extension, QObject,):
         self._preferences.addPreference("meshtools/check_models_on_load", True)
         self._preferences.addPreference("meshtools/fix_normals_on_load", False)
         self._preferences.addPreference("meshtools/randomise_location_on_load", False)
+        self._preferences.addPreference("meshtools/model_unit_factor", 1)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
@@ -78,6 +80,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(" ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Reset origin to center of mesh"), self.resetMeshOrigin)
         self.addMenuItem("  ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
@@ -164,8 +167,24 @@ class MeshTools(Extension, QObject,):
                 position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
                 node.setPosition(position)
 
-            if self._preferences.getValue("meshtools/check_models_on_load") or self._preferences.getValue("meshtools/fix_normals_on_load"):
+            if (
+                self._preferences.getValue("meshtools/check_models_on_load") or
+                self._preferences.getValue("meshtools/fix_normals_on_load") or
+                self._preferences.getValue("meshtools/model_unit_factor") != 1
+            ):
+
                 tri_node = self._toTriMesh(mesh_data)
+
+            if self._preferences.getValue("meshtools/model_unit_factor") != 1:
+                if file_name and os.path.splitext(file_name)[1].lower() not in [".stl", ".obj", ".ply"]:
+                    # only resize models that don't have an intrinsic unit set
+                    continue
+
+                scale_matrix = Matrix()
+                scale_matrix.setByScaleFactor(float(self._preferences.getValue("meshtools/model_unit_factor")))
+                tri_node.apply_transform(scale_matrix.getData())
+
+                self._replaceSceneNode(node, [tri_node])
 
             if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
                 if not file_name:
@@ -338,6 +357,14 @@ class MeshTools(Extension, QObject,):
         if not self._node_queue:
             return
 
+        for node in self._node_queue:
+            mesh_data = node.getMeshData()
+            if not mesh_data:
+                self._message.setText(catalog.i18nc("@info:status", "Replacing a group is not supported"))
+                self._message.show()
+                self._node_queue = [] #type: List[SceneNode]
+                return
+
         options = QFileDialog.Options()
         if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
             options |= QFileDialog.DontUseNativeDialog
@@ -417,12 +444,16 @@ class MeshTools(Extension, QObject,):
 
         mesh_data = job_result[0].getMeshData()
         if not mesh_data:
-            self._message.setText(catalog.i18nc("@info:status", "File contained no mesh data"))
+            self._message.setText(catalog.i18nc("@info:status", "Replacing meshes with a group of meshes is not supported"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
 
-        mesh_name = os.path.basename(mesh_data.getFileName())
+        file_name = mesh_data.getFileName()
+        if file_name:
+            mesh_name = os.path.basename(file_name)
+        else:
+            mesh_name = catalog.i18nc("@text Print job name", "Untitled")
 
         has_merged_nodes = False
 
@@ -479,12 +510,14 @@ class MeshTools(Extension, QObject,):
             mesh_data = node.getMeshData()
             if not mesh_data:
                 continue
-            file_name = mesh_data.getFileName()
-            if not file_name:
-                file_name = ""
-            mesh_name = os.path.basename(file_name)
+            mesh_name = node.getName()
             if not mesh_name:
-                mesh_name = catalog.i18nc("@text Print job name", "Untitled")
+                file_name = mesh_data.getFileName()
+                if not file_name:
+                    file_name = ""
+                mesh_name = os.path.basename(file_name)
+                if not mesh_name:
+                    mesh_name = catalog.i18nc("@text Print job name", "Untitled")
 
             local_transformation = node.getLocalTransformation()
             position = local_transformation.getTranslation()
@@ -494,6 +527,34 @@ class MeshTools(Extension, QObject,):
             new_transformation.setTranslation(position)
 
             op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, mesh_name))
+            op.addOperation(SetTransformMatrixOperation(node, new_transformation))
+
+        op.push()
+
+
+    @pyqtSlot()
+    def resetMeshOrigin(self) -> None:
+        nodes_list = self._getSelectedNodes()
+        if not nodes_list:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            mesh_data = node.getMeshData()
+            if not mesh_data:
+                continue
+
+            extents = mesh_data.getExtents()
+            center = Vector(extents.center.x, extents.center.y, extents.center.z)
+
+            translation = Matrix()
+            translation.setByTranslation(-center)
+            transformed_mesh_data = mesh_data.getTransformed(translation).set(zero_position=Vector())
+
+            new_transformation = Matrix(node.getLocalTransformation().getData())  # Matrix.copy() is not available in Cura 3.5-4.0
+            new_transformation.translate(center)
+
+            op.addOperation(SetMeshDataAndNameOperation(node, transformed_mesh_data, node.getName()))
             op.addOperation(SetTransformMatrixOperation(node, new_transformation))
 
         op.push()
