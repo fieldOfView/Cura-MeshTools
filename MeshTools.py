@@ -628,7 +628,7 @@ class MeshTools(Extension, QObject,):
             # some file formats (eg 3mf) don't supply indices, but have unique vertices per face
             indices = numpy.arange(mesh_data.getVertexCount()).reshape(-1, 3)
 
-        return trimesh.base.Trimesh(vertices=mesh_data.getVertices(), faces=indices, vertex_normals=mesh_data.getNormals())
+        return trimesh.base.Trimesh(vertices=mesh_data.getVertices(), faces=indices)
 
     def _toMeshData(self, tri_node: trimesh.base.Trimesh, file_name: str = "") -> MeshData:
         tri_faces = tri_node.faces
