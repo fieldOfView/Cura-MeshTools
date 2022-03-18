@@ -9,6 +9,7 @@ from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from UM.Message import Message
 from UM.Logger import Logger
+from UM.Version import Version
 
 from UM.Scene.Selection import Selection
 from UM.Scene.SceneNode import SceneNode
@@ -48,11 +49,15 @@ class MeshTools(Extension, QObject,):
         Extension.__init__(self)
 
         self._application = CuraApplication.getInstance()
-        self._controller = self._application.getController()
+        self._use_controls1 = False
+        if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
+            self._use_controls1 = True
 
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
         self._application.fileCompleted.connect(self._onFileCompleted)
+
+        self._controller = self._application.getController()
         self._controller.getScene().sceneChanged.connect(self._onSceneChanged)
 
         self._currently_loading_files = [] #type: List[str]
@@ -88,7 +93,7 @@ class MeshTools(Extension, QObject,):
         self._additional_menu = None  # type: Optional[QObject]
 
     def showSettingsDialog(self) -> None:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "SettingsDialog.qml")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml" if not self._use_controls1 else "qml_controls1", "SettingsDialog.qml")
 
         self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
         if self._settings_dialog:
@@ -104,26 +109,31 @@ class MeshTools(Extension, QObject,):
         context_menu = None
         for child in main_window.contentItem().children():
             try:
-                test = child.findItemIndex # only ContextMenu has a findItemIndex function
+                if not self._use_controls1:
+                    test = child.handleVisibility # With QtQuick Controls 2, ContextMenu is the only item that has a findItemIndex function in the main window root contentitem
+                else:
+                    test = child.findItemIndex  # With QtQuick Controls 1, ContextMenu is the only item that has a findItemIndex function
                 context_menu = child
                 break
             except:
                 pass
 
         if not context_menu:
+            Logger.log("w", "Could not find the viewport context menu")
             return
 
         Logger.log("d", "Inserting item in context menu")
-        context_menu.insertSeparator(0)
-        context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
-
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "MeshToolsMenu.qml")
+        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml" if not self._use_controls1 else "qml_controls1", "MeshToolsMenu.qml")
         self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
         if not self._additional_menu:
             return
+
+        if self._use_controls1:
+            context_menu.insertSeparator(0)
+            context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
+
         # Move additional menu items into context menu
-        # This is handled in QML, because PyQt does not handle QtQuick1 objects very well
-        self._additional_menu.moveToContextMenu(context_menu, 0)
+        self._additional_menu.moveToContextMenu(context_menu)
 
     def _onFileLoaded(self, file_name) -> None:
         self._currently_loading_files.append(file_name)

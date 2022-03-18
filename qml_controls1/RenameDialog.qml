@@ -3,11 +3,11 @@
 // Uranium is released under the terms of the LGPLv3 or higher.
 
 import QtQuick 2.1
-import QtQuick.Controls 2.0
+import QtQuick.Controls 1.1
+import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.1
 
-import UM 1.5 as UM
-import Cura 1.0 as Cura
+import UM 1.1 as UM
 
 UM.Dialog
 {
@@ -15,11 +15,9 @@ UM.Dialog
 
     function setName(new_name) {
         nameField.text = new_name;
-        nameField.selectAll();
+        nameField.selectText();
         nameField.forceActiveFocus();
     }
-
-    buttonSpacing: UM.Theme.getSize("default_margin").width
 
     property bool validName: true
     property string validationError
@@ -40,39 +38,48 @@ UM.Dialog
         manager.setSelectedMeshName(nameField.text)
     }
 
+    signal textChanged(string text)
+    signal selectText()
+    onSelectText:
+    {
+        nameField.selectAll();
+        nameField.focus = true;
+    }
+
     Column
     {
         anchors.fill: parent
 
-        UM.Label
+        Label
         {
             text: base.explanation + "\n" //Newline to make some space using system theming.
             width: parent.width
             wrapMode: Text.WordWrap
         }
 
-        Cura.TextField
+        TextField
         {
             id: nameField
             width: parent.width
             text: base.object
             maximumLength: 40
+            onTextChanged: base.textChanged(text)
         }
     }
 
     rightButtons: [
-        Cura.SecondaryButton
+        Button
         {
             id: cancelButton
             text: catalog.i18nc("@action:button","Cancel")
             onClicked: base.reject()
         },
-        Cura.PrimaryButton
+        Button
         {
-            id: okButton
             text: catalog.i18nc("@action:button", "OK")
             onClicked: base.accept()
             enabled: base.validName
+            isDefault: true
         }
     ]
 }
