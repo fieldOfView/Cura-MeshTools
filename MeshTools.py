@@ -52,6 +52,7 @@ class MeshTools(Extension, QObject,):
         self._use_controls1 = False
         if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
             self._use_controls1 = True
+        self._qml_folder = "qml" if not self._use_controls1 else "qml_controls1"
 
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
@@ -93,7 +94,7 @@ class MeshTools(Extension, QObject,):
         self._additional_menu = None  # type: Optional[QObject]
 
     def showSettingsDialog(self) -> None:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml" if not self._use_controls1 else "qml_controls1", "SettingsDialog.qml")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "SettingsDialog.qml")
 
         self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
         if self._settings_dialog:
@@ -123,7 +124,7 @@ class MeshTools(Extension, QObject,):
             return
 
         Logger.log("d", "Inserting item in context menu")
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml" if not self._use_controls1 else "qml_controls1", "MeshToolsMenu.qml")
+        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "MeshToolsMenu.qml")
         self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
         if not self._additional_menu:
             return
@@ -406,7 +407,7 @@ class MeshTools(Extension, QObject,):
         if not self._node_queue:
             return
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "RenameDialog.qml")
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "RenameDialog.qml")
         self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
         if not self._rename_dialog:
             return
