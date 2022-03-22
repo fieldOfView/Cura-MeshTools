@@ -49,8 +49,13 @@ class MeshTools(Extension, QObject,):
         Extension.__init__(self)
 
         self._application = CuraApplication.getInstance()
+
         self._use_controls1 = False
-        if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
+        try:
+            if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
+                self._use_controls1 = True
+        except AttributeError:
+             # UM.Application.getAPIVersion was added for API > 6 (Cura 4)
             self._use_controls1 = True
         self._qml_folder = "qml" if not self._use_controls1 else "qml_controls1"
 
