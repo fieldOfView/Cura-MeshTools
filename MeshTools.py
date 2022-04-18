@@ -1,8 +1,12 @@
 # Copyright (c) 2021 Aldo Hoeben / fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
-from PyQt5.QtCore import pyqtSlot, QObject
-from PyQt5.QtWidgets import QFileDialog
+try:
+    from PyQt6.QtCore import pyqtSlot, QObject
+    from PyQt6.QtWidgets import QFileDialog
+except ImportError:
+    from PyQt5.QtCore import pyqtSlot, QObject
+    from PyQt5.QtWidgets import QFileDialog
 
 from cura.CuraApplication import CuraApplication
 from UM.Extension import Extension
