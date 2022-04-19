@@ -90,5 +90,5 @@ Menu
         }
     }
 
-    UM.I18nCatalog { id: catalog; name: "cura" }
+    UM.I18nCatalog { id: catalog; name: "meshtools" }
 }

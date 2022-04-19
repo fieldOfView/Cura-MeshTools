@@ -94,5 +94,5 @@ Cura.Menu
         contextMenu.insertMenu(0, meshToolsMenu)
     }
 
-    UM.I18nCatalog { id: catalog; name: "cura" }
+    UM.I18nCatalog { id: catalog; name: "meshtools" }
 }

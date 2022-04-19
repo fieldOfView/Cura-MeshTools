@@ -21,7 +21,7 @@ UM.Dialog
     width: minimumWidth
     height: minimumHeight
 
-    property variant catalog: UM.I18nCatalog { name: "cura" }
+    property variant catalog: UM.I18nCatalog { name: "meshtools" }
 
     function boolCheck(value) //Hack to ensure a good match between python and qml.
     {
