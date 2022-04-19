@@ -1,12 +1,14 @@
 # Copyright (c) 2022 Aldo Hoeben / fieldOfView
 # MeshTools is released under the terms of the AGPLv3 or higher.
 
+USE_QT5 = False
 try:
     from PyQt6.QtCore import pyqtSlot, QObject
     from PyQt6.QtWidgets import QFileDialog
 except ImportError:
     from PyQt5.QtCore import pyqtSlot, QObject
     from PyQt5.QtWidgets import QFileDialog
+    USE_QT5 = True
 
 from cura.CuraApplication import CuraApplication
 from UM.Extension import Extension
@@ -54,14 +56,7 @@ class MeshTools(Extension, QObject,):
 
         self._application = CuraApplication.getInstance()
 
-        self._use_qt5 = False
-        try:
-            if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
-                self._use_qt5 = True
-        except AttributeError:
-             # UM.Application.getAPIVersion was added for API > 6 (Cura 4)
-            self._use_qt5 = True
-        self._qml_folder = "qml" if not self._use_qt5 else "qml_qt5"
+        self._qml_folder = "qml" if not USE_QT5 else "qml_qt5"
 
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
@@ -119,7 +114,7 @@ class MeshTools(Extension, QObject,):
         context_menu = None
         for child in main_window.contentItem().children():
             try:
-                if not self._use_qt5:
+                if not USE_QT5:
                     test = child.handleVisibility # With QtQuick Controls 2, ContextMenu is the only item that has a findItemIndex function in the main window root contentitem
                 else:
                     test = child.findItemIndex  # With QtQuick Controls 1, ContextMenu is the only item that has a findItemIndex function
@@ -138,7 +133,7 @@ class MeshTools(Extension, QObject,):
         if not self._additional_menu:
             return
 
-        if self._use_qt5:
+        if USE_QT5:
             context_menu.insertSeparator(0)
             context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
 
@@ -385,11 +380,6 @@ class MeshTools(Extension, QObject,):
                 self._node_queue = [] #type: List[SceneNode]
                 return
 
-        options = QFileDialog.Options()
-        if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
-            options |= QFileDialog.DontUseNativeDialog
-        filter_types = ";;".join(self._application.getMeshFileHandler().supportedReadFileTypes)
-
         directory = None  # type: Optional[str]
         mesh_data = self._node_queue[0].getMeshData()
         if mesh_data:
@@ -397,11 +387,30 @@ class MeshTools(Extension, QObject,):
         if not directory:
             directory = self._application.getDefaultPath("dialog_load_path").toLocalFile()
 
-        file_name, _ = QFileDialog.getOpenFileName(
-            parent=None,
-            caption=catalog.i18nc("@title:window", "Select Replacement Mesh File"),
-            directory=directory, options=options, filter=filter_types
-        )
+        file_name = ""
+        if USE_QT5:
+            options = QFileDialog.Options()
+            if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
+                options |= QFileDialog.DontUseNativeDialog
+            filter_types = ";;".join(self._application.getMeshFileHandler().supportedReadFileTypes)
+
+            file_name, _ = QFileDialog.getOpenFileName(
+                parent=None,
+                caption=catalog.i18nc("@title:window", "Select Replacement Mesh File"),
+                directory=directory, options=options, filter=filter_types
+            )
+        else:
+            dialog = QFileDialog()
+            dialog.setWindowTitle(catalog.i18nc("@title:window", "Select Replacement Mesh File"))
+            dialog.setDirectory(directory)
+            dialog.setNameFilters(self._application.getMeshFileHandler().supportedReadFileTypes)
+            if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
+                dialog.setOption(QFileDialog.Option.DontUseNativeDialog)
+            dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
+            dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+            if dialog.exec():
+                file_name = dialog.selectedFiles()[0]
+
         if not file_name:
             self._node_queue = [] #type: List[SceneNode]
             return
