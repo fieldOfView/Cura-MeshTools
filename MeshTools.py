@@ -54,14 +54,14 @@ class MeshTools(Extension, QObject,):
 
         self._application = CuraApplication.getInstance()
 
-        self._use_controls1 = False
+        self._use_qt5 = False
         try:
             if self._application.getAPIVersion() < Version(8) and self._application.getVersion() != "master":
-                self._use_controls1 = True
+                self._use_qt5 = True
         except AttributeError:
              # UM.Application.getAPIVersion was added for API > 6 (Cura 4)
-            self._use_controls1 = True
-        self._qml_folder = "qml" if not self._use_controls1 else "qml_controls1"
+            self._use_qt5 = True
+        self._qml_folder = "qml" if not self._use_qt5 else "qml_qt5"
 
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
@@ -119,7 +119,7 @@ class MeshTools(Extension, QObject,):
         context_menu = None
         for child in main_window.contentItem().children():
             try:
-                if not self._use_controls1:
+                if not self._use_qt5:
                     test = child.handleVisibility # With QtQuick Controls 2, ContextMenu is the only item that has a findItemIndex function in the main window root contentitem
                 else:
                     test = child.findItemIndex  # With QtQuick Controls 1, ContextMenu is the only item that has a findItemIndex function
@@ -138,7 +138,7 @@ class MeshTools(Extension, QObject,):
         if not self._additional_menu:
             return
 
-        if self._use_controls1:
+        if self._use_qt5:
             context_menu.insertSeparator(0)
             context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
 
