@@ -1,0 +1,16 @@
+{
+    "author": {
+        "author_id": "fieldofview",
+        "display_name": "fieldOfView",
+        "email": "aldo@fieldofview.com",
+        "website": "http://fieldofview.com"
+    },
+    "description": "Adds several mesh analysis and manipulation tools.\n\nThe development of this plugin can be sponsored via Github Sponsors (https://github.com/sponsors/fieldofview) or Paypal (https://www.paypal.me/fieldofview)",
+    "display_name": "Mesh Tools",
+    "package_id": "MeshTools",
+    "package_type": "plugin",
+    "package_version": "0.0.0",
+    "sdk_version": 0,
+    "sdk_version_semver": "0.0.0",
+    "website": "https://github.com/fieldOfView/Cura-MeshTools"
+}
