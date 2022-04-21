@@ -404,8 +404,6 @@ class MeshTools(Extension, QObject,):
             dialog.setWindowTitle(catalog.i18nc("@title:window", "Select Replacement Mesh File"))
             dialog.setDirectory(directory)
             dialog.setNameFilters(self._application.getMeshFileHandler().supportedReadFileTypes)
-            if sys.platform == "linux" and "KDE_FULL_SESSION" in os.environ:
-                dialog.setOption(QFileDialog.Option.DontUseNativeDialog)
             dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
             dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
             if dialog.exec():
