@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mesh Tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-19 16:11+0000\n"
+"POT-Creation-Date: 2022-04-22 16:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgctxt "@info:title"
 msgid "Mesh Tools"
 msgstr ""
 
-#: MeshTools.py:206 MeshTools.py:485 MeshTools.py:549
+#: MeshTools.py:206 MeshTools.py:483 MeshTools.py:547
 msgctxt "@text Print job name"
 msgid "Untitled"
 msgstr ""
@@ -178,22 +178,22 @@ msgctxt "@title:window"
 msgid "Select Replacement Mesh File"
 msgstr ""
 
-#: MeshTools.py:450
+#: MeshTools.py:448
 msgctxt "@info:status"
 msgid "Reloading a group is not supported"
 msgstr ""
 
-#: MeshTools.py:457
+#: MeshTools.py:455
 msgctxt "@info:status"
 msgid "No link to the original file was found"
 msgstr ""
 
-#: MeshTools.py:469
+#: MeshTools.py:467
 msgctxt "@info:status"
 msgid "Failed to load mesh"
 msgstr ""
 
-#: MeshTools.py:476
+#: MeshTools.py:474
 msgctxt "@info:status"
 msgid "Replacing meshes with a group of meshes is not supported"
 msgstr ""
