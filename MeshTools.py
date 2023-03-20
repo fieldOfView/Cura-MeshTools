@@ -3,7 +3,7 @@
 
 try:
     from cura.ApplicationMetadata import CuraSDKVersion
-except ImportError: # Cura <= 3.6
+except ImportError:  # Cura <= 3.6
     CuraSDKVersion = "6.0.0"
 USE_QT5 = False
 if CuraSDKVersion >= "8.0.0":
@@ -19,7 +19,6 @@ from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from UM.Message import Message
 from UM.Logger import Logger
-from UM.Version import Version
 
 from UM.Scene.Selection import Selection
 from UM.Scene.SceneNode import SceneNode
@@ -31,27 +30,24 @@ from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from UM.Mesh.MeshData import MeshData, calculateNormalsFromIndexedVertices
-from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Math.AxisAlignedBox import AxisAlignedBox
 from UM.Mesh.ReadMeshJob import ReadMeshJob
 from UM.Math.Vector import Vector
 from UM.Math.Matrix import Matrix
+from UM.Resources import Resources
+from UM.i18n import i18nCatalog
 
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
 from .SetMeshDataAndNameOperation import SetMeshDataAndNameOperation
-    
+
 import os
 import sys
 import numpy
 import trimesh
 import random
-import copy
 
 from typing import Optional, List, Dict
-
-from UM.Resources import Resources
-from UM.i18n import i18nCatalog
 
 Resources.addSearchPath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)))
@@ -59,9 +55,7 @@ Resources.addSearchPath(
 
 catalog = i18nCatalog("meshtools")
 
-if catalog.hasTranslationLoaded():
-    Logger.log("i", "Mesh-Tool Plugin translation loaded!")
-    
+
 class MeshTools(Extension, QObject,):
     def __init__(self, parent = None) -> None:
         QObject.__init__(self, parent)
@@ -78,9 +72,9 @@ class MeshTools(Extension, QObject,):
         self._controller = self._application.getController()
         self._controller.getScene().sceneChanged.connect(self._onSceneChanged)
 
-        self._currently_loading_files = [] #type: List[str]
-        self._node_queue = [] #type: List[SceneNode]
-        self._mesh_not_watertight_messages = {} #type: Dict[str, Message]
+        self._currently_loading_files = []  # type: List[str]
+        self._node_queue = []  # type: List[SceneNode]
+        self._mesh_not_watertight_messages = {}  # type: Dict[str, Message]
 
         self._settings_dialog = None
         self._rename_dialog = None
@@ -128,7 +122,7 @@ class MeshTools(Extension, QObject,):
         for child in main_window.contentItem().children():
             try:
                 if not USE_QT5:
-                    test = child.handleVisibility # With QtQuick Controls 2, ContextMenu is the only item that has a findItemIndex function in the main window root contentitem
+                    test = child.handleVisibility  # With QtQuick Controls 2, ContextMenu is the only item that has a findItemIndex function in the main window root contentitem
                 else:
                     test = child.findItemIndex  # With QtQuick Controls 1, ContextMenu is the only item that has a findItemIndex function
                 context_menu = child
@@ -346,7 +340,10 @@ class MeshTools(Extension, QObject,):
             success = tri_node.fill_holes()
             self._replaceSceneNode(node, [tri_node])
             if not success:
-                self._message.setText(catalog.i18nc("@info:status", "The mesh needs more extensive repair to become watertight"))
+                self._message.setText(catalog.i18nc(
+                    "@info:status",
+                    "The mesh needs more extensive repair to become watertight"
+                ))
                 self._message.show()
 
     @pyqtSlot()
