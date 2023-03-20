@@ -40,10 +40,7 @@ from UM.Math.Matrix import Matrix
 from .SetTransformMatrixOperation import SetTransformMatrixOperation
 from .SetParentOperationSimplified import SetParentOperationSimplified
 from .SetMeshDataAndNameOperation import SetMeshDataAndNameOperation
-
-from UM.i18n import i18nCatalog
-catalog = i18nCatalog("meshtools")
-
+    
 import os
 import sys
 import numpy
@@ -53,6 +50,18 @@ import copy
 
 from typing import Optional, List, Dict
 
+from UM.Resources import Resources
+from UM.i18n import i18nCatalog
+
+Resources.addSearchPath(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)))
+)  # Plugin translation file import
+
+catalog = i18nCatalog("meshtools")
+
+if catalog.hasTranslationLoaded():
+    Logger.log("i", "Mesh-Tool Plugin translation loaded!")
+    
 class MeshTools(Extension, QObject,):
     def __init__(self, parent = None) -> None:
         QObject.__init__(self, parent)
@@ -319,9 +328,9 @@ class MeshTools(Extension, QObject,):
         for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshDataTransformed())
             message_body = message_body + "\n - %s:" % node.getName()
-            message_body += "\n\t" + "%d vertices, %d faces" % (len(tri_node.vertices), len(tri_node.faces))
+            message_body += "\n\t" + catalog.i18nc("@info:status", "%d vertices, %d faces") % (len(tri_node.vertices), len(tri_node.faces))
             if tri_node.is_watertight:
-                message_body += "\n\t" + "area: %d mm2, volume: %d mm3" % (tri_node.area, tri_node.volume)
+                message_body += "\n\t" + catalog.i18nc("@info:status", "area: %d mm2, volume: %d mm3") % (tri_node.area, tri_node.volume)
 
         self._message.setText(message_body)
         self._message.show()
