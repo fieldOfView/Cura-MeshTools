@@ -1,0 +1,346 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Mesh Tools package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh Tools\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-20 15:21+0000\n"
+"PO-Revision-Date: 2023-03-23 10:58+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
+
+#: MeshTools.py:88 qml/MeshToolsMenu.qml:19 qml_qt5/MeshToolsMenu.qml:18
+msgctxt "@item:inmenu"
+msgid "Reload model"
+msgstr "Ricarica modello"
+
+#: MeshTools.py:89 qml/MeshToolsMenu.qml:25 qml_qt5/MeshToolsMenu.qml:24
+msgctxt "@item:inmenu"
+msgid "Rename model..."
+msgstr "Rinomina modello..."
+
+#: MeshTools.py:90
+msgctxt "@item:inmenu"
+msgid "Replace models..."
+msgstr "Sostituisci modelli..."
+
+#: MeshTools.py:92
+msgctxt "@item:inmenu"
+msgid "Check models"
+msgstr "Controlla modelli"
+
+#: MeshTools.py:93
+msgctxt "@item:inmenu"
+msgid "Analyse models"
+msgstr "Analizza modelli"
+
+#: MeshTools.py:94 qml/MeshToolsMenu.qml:50 qml_qt5/MeshToolsMenu.qml:49
+msgctxt "@item:inmenu"
+msgid "Fix simple holes"
+msgstr "Correggi buchi semplici"
+
+#: MeshTools.py:95 qml/MeshToolsMenu.qml:56 qml_qt5/MeshToolsMenu.qml:55
+msgctxt "@item:inmenu"
+msgid "Fix model normals"
+msgstr "Correggi normali dei modelli"
+
+#: MeshTools.py:96 qml/MeshToolsMenu.qml:62 qml_qt5/MeshToolsMenu.qml:61
+msgctxt "@item:inmenu"
+msgid "Split model into parts"
+msgid_plural "Split models into parts"
+msgstr[0] "Dividi modello in parti"
+msgstr[1] "Dividi modelli in parti"
+
+#: MeshTools.py:98 qml/MeshToolsMenu.qml:69 qml_qt5/MeshToolsMenu.qml:68
+msgctxt "@item:inmenu"
+msgid "Randomise location"
+msgstr "Posizione casuale"
+
+#: MeshTools.py:99 qml/MeshToolsMenu.qml:75 qml_qt5/MeshToolsMenu.qml:74
+msgctxt "@item:inmenu"
+msgid "Apply transformations to mesh"
+msgstr "Applica trasformazioni alla maglia"
+
+#: MeshTools.py:100 qml/MeshToolsMenu.qml:81 qml_qt5/MeshToolsMenu.qml:80
+msgctxt "@item:inmenu"
+msgid "Reset origin to center of mesh"
+msgstr "Ripristina l'origine al centro della maglia"
+
+#: MeshTools.py:102
+msgctxt "@item:inmenu"
+msgid "Mesh Tools settings..."
+msgstr "Impostazioni strumenti della maglia..."
+
+#: MeshTools.py:104 MeshTools.py:145 MeshTools.py:219
+msgctxt "@info:title"
+msgid "Mesh Tools"
+msgstr "Strumenti della maglia"
+
+#: MeshTools.py:213 MeshTools.py:493 MeshTools.py:557
+msgctxt "@text Print job name"
+msgid "Untitled"
+msgstr "Senza titolo"
+
+#: MeshTools.py:220
+#, python-format
+msgctxt "@info:status"
+msgid "Model %s is not watertight, and may not print properly."
+msgstr ""
+"Il modello %s non è \"waterthight\" e potrebbe non essere stampato "
+"correttamente."
+
+#: MeshTools.py:225
+msgctxt "@info:status"
+msgid "Check X-Ray View and repair the model before printing it."
+msgstr "Controlla la vista a raggi X e ripara il modello prima di stamparlo."
+
+#: MeshTools.py:226
+msgctxt "@action:button"
+msgid "Show X-Ray View"
+msgstr "Mostra la vista a raggi X"
+
+#: MeshTools.py:229
+msgctxt "@info:status"
+msgid "Repair the model before printing it."
+msgstr "Ripara il modello prima di stamparlo."
+
+#: MeshTools.py:267
+msgctxt "@info:status"
+msgid "Please select a single model first"
+msgstr "Si prega di selezionare prima un singolo modello"
+
+#: MeshTools.py:272 MeshTools.py:290
+msgctxt "@info:status"
+msgid "Please select one or more models first"
+msgstr "Si prega di selezionare prima uno o più modelli"
+
+#: MeshTools.py:301
+msgctxt "@info:status"
+msgid "Check summary:"
+msgstr "Controlla il riepilogo:"
+
+#: MeshTools.py:306
+msgctxt "@info:status"
+msgid "is watertight"
+msgstr "è \"waterthight\""
+
+#: MeshTools.py:308
+msgctxt "@info:status"
+msgid "is not watertight and may not print properly"
+msgstr "non è \"waterthight\" a non può essere stampato correttamente"
+
+#: MeshTools.py:310
+#, python-brace-format
+msgctxt "@info:status"
+msgid "and consists of {body_count} submeshes"
+msgstr "e consiste in {body_count} sottomesh"
+
+#: MeshTools.py:321
+msgctxt "@info:status"
+msgid "Analysis summary:"
+msgstr "Riepilogo dell'analisi:"
+
+#: MeshTools.py:325
+#, python-format
+msgctxt "@info:status"
+msgid "%d vertices, %d faces"
+msgstr "%d vertici, %d facce"
+
+#: MeshTools.py:327
+#, python-format
+msgctxt "@info:status"
+msgid "area: %d mm2, volume: %d mm3"
+msgstr "area: %d mm2, volume: %d mm3"
+
+#: MeshTools.py:345
+msgctxt "@info:status"
+msgid "The mesh needs more extensive repair to become watertight"
+msgstr ""
+"La mesh necessita di una riparazione più estensiva per diventare "
+"\"watertight\""
+
+#: MeshTools.py:366
+msgctxt "@info:status"
+msgid "Split result:"
+msgstr "Risultato della divisione:"
+
+#: MeshTools.py:372
+#, python-format
+msgctxt "@info:status"
+msgid "was split in %d submeshes"
+msgstr "è stato diviso in %d sottomesh"
+
+#: MeshTools.py:374
+msgctxt "@info:status"
+msgid "could not be split into submeshes"
+msgstr "non può essere diviso in sottomesh"
+
+#: MeshTools.py:388
+msgctxt "@info:status"
+msgid "Replacing a group is not supported"
+msgstr "La sostituzione del gruppo non è supportata"
+
+#: MeshTools.py:409 MeshTools.py:414
+msgctxt "@title:window"
+msgid "Select Replacement Mesh File"
+msgstr "Seleziona il file maglia sostitutivo"
+
+#: MeshTools.py:458
+msgctxt "@info:status"
+msgid "Reloading a group is not supported"
+msgstr "Il ricaricamento di un gruppo non è supportato"
+
+#: MeshTools.py:465
+msgctxt "@info:status"
+msgid "No link to the original file was found"
+msgstr "Nessun collegamento trovato con il file originale"
+
+#: MeshTools.py:477
+msgctxt "@info:status"
+msgid "Failed to load mesh"
+msgstr "Impossibile caricare la maglia"
+
+#: MeshTools.py:484
+msgctxt "@info:status"
+msgid "Replacing meshes with a group of meshes is not supported"
+msgstr "La sostituzione di maglie con un gruppo di maglie non è supportato"
+
+#: qml/SettingsDialog.qml:15 qml_qt5/SettingsDialog.qml:17
+msgctxt "@title:window"
+msgid "Mesh Tools Settings"
+msgstr "Impostazioni strumenti della maglia"
+
+#: qml/SettingsDialog.qml:49 qml_qt5/SettingsDialog.qml:51
+msgctxt "@info:tooltip"
+msgid "Check if models are watertight when loading them"
+msgstr "Controlla se i modelli sono \"watertight\" quando si caricano"
+
+#: qml/SettingsDialog.qml:53 qml_qt5/SettingsDialog.qml:55
+msgctxt "@option:check"
+msgid "Check models on load"
+msgstr "Controlla il modello al caricamento"
+
+#: qml/SettingsDialog.qml:63 qml_qt5/SettingsDialog.qml:65
+msgctxt "@info:tooltip"
+msgid "Always recalculate model normals when loading them"
+msgstr "Ricalcola sempre i \"normals\" del modello quando caricati"
+
+#: qml/SettingsDialog.qml:67 qml_qt5/SettingsDialog.qml:69
+msgctxt "@option:check"
+msgid "Fix normals on load"
+msgstr "Ripara \"normals\" al caricamento"
+
+#: qml/SettingsDialog.qml:80 qml_qt5/SettingsDialog.qml:82
+msgctxt "@info:tooltip"
+msgid ""
+"Unit to convert meshes from when the file does not specify a unit (such as "
+"STL files). All units will be converted to millimeters."
+msgstr ""
+"Unità da cui convertire le maglie quando il file non la specifica (come per "
+"files STL). Tutte le unità saranno convertite in millimetri."
+
+#: qml/SettingsDialog.qml:88 qml_qt5/SettingsDialog.qml:90
+msgctxt "@window:text"
+msgid "Unit for files that don't specify a unit:"
+msgstr "Unità per i files che non la specificano:"
+
+#: qml/SettingsDialog.qml:96 qml_qt5/SettingsDialog.qml:104
+msgctxt "@option:unit"
+msgid "Micron"
+msgstr "Micron"
+
+#: qml/SettingsDialog.qml:97 qml_qt5/SettingsDialog.qml:105
+msgctxt "@option:unit"
+msgid "Millimeter (default)"
+msgstr "Millimetro (default)"
+
+#: qml/SettingsDialog.qml:98 qml_qt5/SettingsDialog.qml:106
+msgctxt "@option:unit"
+msgid "Centimeter"
+msgstr "Centrimetro"
+
+#: qml/SettingsDialog.qml:99 qml_qt5/SettingsDialog.qml:107
+msgctxt "@option:unit"
+msgid "Meter"
+msgstr "Metro"
+
+#: qml/SettingsDialog.qml:100 qml_qt5/SettingsDialog.qml:108
+msgctxt "@option:unit"
+msgid "Inch"
+msgstr "Pollice"
+
+#: qml/SettingsDialog.qml:101 qml_qt5/SettingsDialog.qml:109
+msgctxt "@option:unit"
+msgid "Feet"
+msgstr "Piedi"
+
+#: qml/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+msgctxt "@info:tooltip"
+msgid "Place models at a random location on the build plate when loading them"
+msgstr ""
+"Posiziona i modelli in posizioni casuali sul piano durante il caricamento"
+
+#: qml/SettingsDialog.qml:147 qml_qt5/SettingsDialog.qml:144
+msgctxt "@option:check"
+msgid "Randomize position on load"
+msgstr "Posizione casuale al caricamento"
+
+#: qml/SettingsDialog.qml:158 qml_qt5/SettingsDialog.qml:155
+msgctxt "@action:button"
+msgid "Close"
+msgstr "Chiudi"
+
+#: qml/RenameDialog.qml:25 qml_qt5/RenameDialog.qml:24
+msgctxt "@title:window"
+msgid "Rename"
+msgstr "Rinomina"
+
+#: qml/RenameDialog.qml:26 qml_qt5/RenameDialog.qml:25
+msgctxt "@info"
+msgid "Please provide a new name."
+msgstr "Si prega di fornire un nuovo nome."
+
+#: qml/RenameDialog.qml:66 qml_qt5/RenameDialog.qml:74
+msgctxt "@action:button"
+msgid "Cancel"
+msgstr "Cancella"
+
+#: qml/RenameDialog.qml:72 qml_qt5/RenameDialog.qml:79
+msgctxt "@action:button"
+msgid "OK"
+msgstr "OK"
+
+#: qml/MeshToolsMenu.qml:15
+msgctxt "@item:inmenu"
+msgid "Mesh Tools"
+msgstr "Strumenti della maglia"
+
+#: qml/MeshToolsMenu.qml:31 qml_qt5/MeshToolsMenu.qml:30
+msgctxt "@item:inmenu"
+msgid "Replace model..."
+msgid_plural "Replace models..."
+msgstr[0] "Sostituisci il modello..."
+msgstr[1] "Sostituisci i modelli..."
+
+#: qml/MeshToolsMenu.qml:38 qml_qt5/MeshToolsMenu.qml:37
+msgctxt "@item:inmenu"
+msgid "Check mesh"
+msgid_plural "Check meshes"
+msgstr[0] "Controlla la maglia"
+msgstr[1] "Controlla le maglie"
+
+#: qml/MeshToolsMenu.qml:44 qml_qt5/MeshToolsMenu.qml:43
+msgctxt "@item:inmenu"
+msgid "Analyse mesh"
+msgid_plural "Analyse meshes"
+msgstr[0] "Analizza la maglia"
+msgstr[1] "Analizza le maglie"
