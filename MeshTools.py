@@ -50,7 +50,10 @@ import random
 from typing import Optional, List, Dict
 
 Resources.addSearchPath(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)))
+    os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        "resources"
+    )
 )  # Plugin translation file import
 
 catalog = i18nCatalog("meshtools")
@@ -105,7 +108,12 @@ class MeshTools(Extension, QObject,):
         self._additional_menu = None  # type: Optional[QObject]
 
     def showSettingsDialog(self) -> None:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "SettingsDialog.qml")
+        path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "resources",
+            self._qml_folder,
+            "SettingsDialog.qml"
+        )
 
         self._settings_dialog = self._application.createQmlComponent(path, {"manager": self})
         if self._settings_dialog:
@@ -135,7 +143,12 @@ class MeshTools(Extension, QObject,):
             return
 
         Logger.log("d", "Inserting item in context menu")
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "MeshToolsMenu.qml")
+        qml_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "resources",
+            self._qml_folder,
+            "MeshToolsMenu.qml"
+        )
         self._additional_menu = self._application.createQmlComponent(qml_path, {"manager": self})
         if not self._additional_menu:
             return
@@ -433,7 +446,12 @@ class MeshTools(Extension, QObject,):
         if not self._node_queue:
             return
 
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self._qml_folder, "RenameDialog.qml")
+        path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "resources",
+            self._qml_folder,
+            "RenameDialog.qml"
+        )
         self._rename_dialog = self._application.createQmlComponent(path, {"manager": self})
         if not self._rename_dialog:
             return

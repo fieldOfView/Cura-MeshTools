@@ -16,7 +16,7 @@ jobs:
         id: translation
         uses: Elkin-Vasily/cura-plugin-translation@v1
         with:
-          translation_folder: 'i18n'
+          translation_folder: 'resources/i18n'
           translation_name: 'meshtools'
           plugin_name: 'Mesh Tools'
 
