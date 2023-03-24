@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Mesh Tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-20 15:21+0000\n"
-"PO-Revision-Date: 2023-03-23 10:58+0100\n"
+"PO-Revision-Date: 2023-03-24 16:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: it_IT\n"
@@ -142,7 +142,7 @@ msgstr "non è \"waterthight\" a non può essere stampato correttamente"
 #, python-brace-format
 msgctxt "@info:status"
 msgid "and consists of {body_count} submeshes"
-msgstr "e consiste in {body_count} sottomesh"
+msgstr "e consiste in {body_count} sottomaglie"
 
 #: MeshTools.py:321
 msgctxt "@info:status"
@@ -165,7 +165,7 @@ msgstr "area: %d mm2, volume: %d mm3"
 msgctxt "@info:status"
 msgid "The mesh needs more extensive repair to become watertight"
 msgstr ""
-"La mesh necessita di una riparazione più estensiva per diventare "
+"La maglia necessita di una riparazione più estensiva per diventare "
 "\"watertight\""
 
 #: MeshTools.py:366
@@ -177,12 +177,12 @@ msgstr "Risultato della divisione:"
 #, python-format
 msgctxt "@info:status"
 msgid "was split in %d submeshes"
-msgstr "è stato diviso in %d sottomesh"
+msgstr "è stato diviso in %d sottomaglie"
 
 #: MeshTools.py:374
 msgctxt "@info:status"
 msgid "could not be split into submeshes"
-msgstr "non può essere diviso in sottomesh"
+msgstr "non può essere diviso in sottomaglie"
 
 #: MeshTools.py:388
 msgctxt "@info:status"
@@ -232,12 +232,12 @@ msgstr "Controlla il modello al caricamento"
 #: qml/SettingsDialog.qml:63 qml_qt5/SettingsDialog.qml:65
 msgctxt "@info:tooltip"
 msgid "Always recalculate model normals when loading them"
-msgstr "Ricalcola sempre i \"normals\" del modello quando caricati"
+msgstr "Ricalcola sempre le normali del modello quando caricati"
 
 #: qml/SettingsDialog.qml:67 qml_qt5/SettingsDialog.qml:69
 msgctxt "@option:check"
 msgid "Fix normals on load"
-msgstr "Ripara \"normals\" al caricamento"
+msgstr "Ripara normali al caricamento"
 
 #: qml/SettingsDialog.qml:80 qml_qt5/SettingsDialog.qml:82
 msgctxt "@info:tooltip"
