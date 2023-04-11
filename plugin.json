@@ -1,7 +1,7 @@
 {
     "name": "Mesh Tools",
     "author": "fieldOfView",
-    "version": "3.7.2",
+    "version": "3.7.3-DEV",
     "description": "Adds several mesh analysis and manipulation tools",
     "api": 5,
     "supported_sdk_versions": ["5.0.0", "6.0.0", "7.0.0", "8.0.0"],
