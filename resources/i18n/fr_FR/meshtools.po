@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mesh Tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-25 21:43+0000\n"
-"PO-Revision-Date: 2023-07-25 23:45+0200\n"
+"POT-Creation-Date: 2023-07-25 22:38+0000\n"
+"PO-Revision-Date: 2023-07-26 00:42+0200\n"
 "Last-Translator: 5axes <5axes@free.fr>\n"
 "Language-Team: 5axes\n"
 "Language: fr\n"
@@ -93,134 +93,144 @@ msgctxt "@item:inmenu"
 msgid "Mesh Tools settings..."
 msgstr "Paramètres de Mesh Tools..."
 
-#: MeshTools.py:111 MeshTools.py:162 MeshTools.py:244
+#: MeshTools.py:111 MeshTools.py:162 MeshTools.py:250
 msgctxt "@info:title"
 msgid "Mesh Tools"
 msgstr "Mesh Tools"
 
-#: MeshTools.py:238 MeshTools.py:523 MeshTools.py:607
+#: MeshTools.py:210
+msgctxt "@info:status"
+msgid "Randomise Location fixed by Mesh Tools"
+msgstr "Placement aléatoire par Mesh Tools"
+
+#: MeshTools.py:216
+msgctxt "@info:status"
+msgid "Location fixed by Mesh Tools"
+msgstr "Placement fixé par Mesh Tools"
+
+#: MeshTools.py:244 MeshTools.py:529 MeshTools.py:613
 msgctxt "@text Print job name"
 msgid "Untitled"
 msgstr "Sans Nom"
 
-#: MeshTools.py:245
+#: MeshTools.py:251
 #, python-format
 msgctxt "@info:status"
 msgid "Model %s is not watertight, and may not print properly."
 msgstr ""
 "Le modèle %s n'est pas étanche et risque de ne pas s'imprimer correctement."
 
-#: MeshTools.py:250
+#: MeshTools.py:256
 msgctxt "@info:status"
 msgid "Check X-Ray View and repair the model before printing it."
 msgstr "Vérifiez la vue aux Rayons-X et réparez le modèle avant de l'imprimer."
 
-#: MeshTools.py:251
+#: MeshTools.py:257
 msgctxt "@action:button"
 msgid "Show X-Ray View"
 msgstr "Afficher la vue aux Rayons-X"
 
-#: MeshTools.py:254
+#: MeshTools.py:260
 msgctxt "@info:status"
 msgid "Repair the model before printing it."
 msgstr "Réparez le modèle avant de l'imprimer."
 
-#: MeshTools.py:292
+#: MeshTools.py:298
 msgctxt "@info:status"
 msgid "Please select a single model first"
 msgstr "Sélectionnez tout d'abord une pièce"
 
-#: MeshTools.py:297 MeshTools.py:315
+#: MeshTools.py:303 MeshTools.py:321
 msgctxt "@info:status"
 msgid "Please select one or more models first"
 msgstr "Sélectionnez tout d'abord des pièces"
 
-#: MeshTools.py:326
+#: MeshTools.py:332
 msgctxt "@info:status"
 msgid "Check summary:"
 msgstr "Résumé de la vérification :"
 
-#: MeshTools.py:331
+#: MeshTools.py:337
 msgctxt "@info:status"
 msgid "is watertight"
 msgstr "est étanche"
 
-#: MeshTools.py:333
+#: MeshTools.py:339
 msgctxt "@info:status"
 msgid "is not watertight and may not print properly"
 msgstr "n'est pas étanche et peut ne pas imprimer correctement"
 
-#: MeshTools.py:335
+#: MeshTools.py:341
 #, python-brace-format
 msgctxt "@info:status"
 msgid "and consists of {body_count} submeshes"
 msgstr "et consiste en {body_count} sous-ensembles"
 
-#: MeshTools.py:346
+#: MeshTools.py:352
 msgctxt "@info:status"
 msgid "Analysis summary:"
 msgstr "Résumé de l'analyse :"
 
-#: MeshTools.py:350
+#: MeshTools.py:356
 #, python-format
 msgctxt "@info:status"
 msgid "%d vertices, %d faces"
 msgstr "%d sommets, %d faces"
 
-#: MeshTools.py:352
+#: MeshTools.py:358
 #, python-format
 msgctxt "@info:status"
 msgid "area: %d mm2, volume: %d mm3"
 msgstr "surface: %d mm2, volume: %d mm3"
 
-#: MeshTools.py:370
+#: MeshTools.py:376
 msgctxt "@info:status"
 msgid "The mesh needs more extensive repair to become watertight"
 msgstr ""
 "La maille a besoin de réparations plus importantes pour devenir étanche."
 
-#: MeshTools.py:391
+#: MeshTools.py:397
 msgctxt "@info:status"
 msgid "Split result:"
 msgstr "Résultat du fractionnement :"
 
-#: MeshTools.py:397
+#: MeshTools.py:403
 #, python-format
 msgctxt "@info:status"
 msgid "was split in %d submeshes"
 msgstr "a été divisé en %d sous-maillages"
 
-#: MeshTools.py:399
+#: MeshTools.py:405
 msgctxt "@info:status"
 msgid "could not be split into submeshes"
 msgstr "n'a pas pu être divisé en sous-ensembles"
 
-#: MeshTools.py:413
+#: MeshTools.py:419
 msgctxt "@info:status"
 msgid "Replacing a group is not supported"
 msgstr "Le remplacement d'un groupe n'est pas pris en charge"
 
-#: MeshTools.py:434 MeshTools.py:439
+#: MeshTools.py:440 MeshTools.py:445
 msgctxt "@title:window"
 msgid "Select Replacement Mesh File"
 msgstr "Sélectionnez le fichier de maillage de remplacement"
 
-#: MeshTools.py:488
+#: MeshTools.py:494
 msgctxt "@info:status"
 msgid "Reloading a group is not supported"
 msgstr "Le rechargement d'un groupe n'est pas pris en charge"
 
-#: MeshTools.py:495
+#: MeshTools.py:501
 msgctxt "@info:status"
 msgid "No link to the original file was found"
 msgstr "Aucun lien vers le fichier original n'a été trouvé"
 
-#: MeshTools.py:507
+#: MeshTools.py:513
 msgctxt "@info:status"
 msgid "Failed to load mesh"
 msgstr "Échec du chargement du maillage"
 
-#: MeshTools.py:514
+#: MeshTools.py:520
 msgctxt "@info:status"
 msgid "Replacing meshes with a group of meshes is not supported"
 msgstr ""
