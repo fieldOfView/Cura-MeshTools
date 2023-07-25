@@ -66,7 +66,7 @@ class MeshTools(Extension, QObject,):
 
         self._application = CuraApplication.getInstance()
 
-        self._qml_folder = "qml" if not USE_QT5 else "qml_qt5"
+        self._qml_folder = "qml_qt6" if not USE_QT5 else "qml_qt5"
 
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
