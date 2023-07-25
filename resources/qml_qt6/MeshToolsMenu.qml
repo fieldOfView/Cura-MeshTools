@@ -70,6 +70,12 @@ Cura.Menu
             enabled: UM.Selection.hasSelection
             onTriggered: manager.randomiseMeshLocation()
         }
+		Cura.MenuItem
+        {
+            text: catalog.i18nc("@item:inmenu", "Fixed location")
+            enabled: UM.Selection.hasSelection
+            onTriggered: manager.setMeshLocation()
+        }
         Cura.MenuItem
         {
             text: catalog.i18nc("@item:inmenu", "Apply transformations to mesh")

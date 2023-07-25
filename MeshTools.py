@@ -102,6 +102,7 @@ class MeshTools(Extension, QObject,):
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
         self.addMenuItem(" ", lambda: None)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fixed location"), self.setMeshLocation)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reset origin to center of mesh"), self.resetMeshOrigin)
         self.addMenuItem("  ", lambda: None)
@@ -558,6 +559,26 @@ class MeshTools(Extension, QObject,):
             op.addOperation(SetTransformOperation(node, translation=position))
         op.push()
 
+    @pyqtSlot()
+    def setMeshLocation(self) -> None:
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+
+        global_container_stack = self._application.getGlobalContainerStack()
+        if not global_container_stack:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            node_bounds = node.getBoundingBox()
+            Vx=float(self._preferences.getValue("meshtools/set_location_x"))
+            Vy=float(self._preferences.getValue("meshtools/set_location_y"))
+            Logger.log('d', "Position X : {} Y : {}".format(Vx,Vy))
+            position = Vector(Vx,(node_bounds.height / 2),Vy)
+            op.addOperation(SetTransformOperation(node, translation=position))
+        op.push()
+        
     def _randomLocation(self, node_bounds, max_x_coordinate, max_y_coordinate):
         return Vector(
             (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),

@@ -71,6 +71,12 @@ Menu
     }
     MenuItem
     {
+        text: catalog.i18nc("@item:inmenu", "Fixed location")
+        enabled: UM.Selection.hasSelection
+        onTriggered: manager.setMeshLocation()
+    }	
+    MenuItem
+    {
         text: catalog.i18nc("@item:inmenu", "Apply transformations to mesh")
         enabled: UM.Selection.hasSelection
         onTriggered: manager.bakeMeshTransformation()

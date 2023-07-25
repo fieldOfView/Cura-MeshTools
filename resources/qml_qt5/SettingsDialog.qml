@@ -142,6 +142,8 @@ UM.Dialog
 
             CheckBox
             {
+				id: checkRandom
+				enabled: !checkPosition.checked			
                 text: catalog.i18nc("@option:check", "Randomize position on load")
                 checked: boolCheck(UM.Preferences.getValue("meshtools/randomise_location_on_load"))
                 onCheckedChanged: UM.Preferences.setValue("meshtools/randomise_location_on_load", checked)
@@ -156,6 +158,8 @@ UM.Dialog
 
             CheckBox
             {
+				id: checkPosition
+				enabled: !checkRandom.checked			
                 text: catalog.i18nc("@option:check", "Set position on load")
                 checked: boolCheck(UM.Preferences.getValue("meshtools/set_location_on_load"))
                 onCheckedChanged: UM.Preferences.setValue("meshtools/set_location_on_load", checked)
@@ -176,6 +180,7 @@ UM.Dialog
 			}
 			TextField
 			{
+				id: field_X
 				width: UM.Theme.getSize("setting_control").width
 				height: UM.Theme.getSize("setting_control").height		
 				text: UM.Preferences.getValue("meshtools/set_location_x")
@@ -191,6 +196,8 @@ UM.Dialog
 			Label
 			{
 				text: "mm"
+				
+				anchors.left: field_X.right
 			}				
 		}
 		UM.TooltipArea
@@ -206,9 +213,9 @@ UM.Dialog
 			}
 			TextField
 			{
+				id: field_Y
 				width: UM.Theme.getSize("setting_control").width
 				height: UM.Theme.getSize("setting_control").height
-				unit: "mm"
 				text: UM.Preferences.getValue("meshtools/set_location_y")
 				
 				anchors.left: label_Y.right
@@ -222,6 +229,8 @@ UM.Dialog
 			Label
 			{
 				text: "mm"
+				
+				anchors.left: field_Y.right
 			}			
 		}			
     }
