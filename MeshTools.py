@@ -86,6 +86,9 @@ class MeshTools(Extension, QObject,):
         self._preferences.addPreference("meshtools/check_models_on_load", True)
         self._preferences.addPreference("meshtools/fix_normals_on_load", False)
         self._preferences.addPreference("meshtools/randomise_location_on_load", False)
+        self._preferences.addPreference("meshtools/set_location_on_load", False)
+        self._preferences.addPreference("meshtools/set_location_x", 0)
+        self._preferences.addPreference("meshtools/set_location_y", 0)
         self._preferences.addPreference("meshtools/model_unit_factor", 1)
 
         self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
@@ -193,13 +196,21 @@ class MeshTools(Extension, QObject,):
             if not mesh_data:
                 continue
             file_name = mesh_data.getFileName()
-
-            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
+            
+            if ( self._preferences.getValue("meshtools/randomise_location_on_load") or self._preferences.getValue("meshtools/set_location_on_load") ) and global_container_stack != None:
                 if file_name and os.path.splitext(file_name)[1].lower() == ".3mf": # don't randomise project files
                     continue
 
                 node_bounds = node.getBoundingBox()
-                position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                
+                if self._preferences.getValue("meshtools/randomise_location_on_load") :
+                    position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                else :
+                    Vx=float(self._preferences.getValue("meshtools/set_location_x"))
+                    Vy=float(self._preferences.getValue("meshtools/set_location_y"))
+                    Logger.log('d', "Position X : {} Y : {}".format(Vx,Vy))
+                    position = Vector(Vx,(node_bounds.height / 2),Vy)
+                    
                 node.setPosition(position)
 
             if (

@@ -1,11 +1,12 @@
 // Copyright (c) 2023 Aldo Hoeben / fieldOfView
 // MeshTools is released under the terms of the AGPLv3 or higher.
 
-import QtQuick 2.1
-import QtQuick.Controls 2.0
+import QtQuick 6.0
+import QtQuick.Controls 6.0
+import QtQuick.Layouts 6.0
 
-import UM 1.5 as UM
-import Cura 1.1 as Cura
+import UM 1.6 as UM
+import Cura 1.7 as Cura
 
 
 UM.Dialog
@@ -144,11 +145,86 @@ UM.Dialog
 
             UM.CheckBox
             {
+				id: checkRandom
+				enabled: !checkPosition.checked
                 text: catalog.i18nc("@option:check", "Randomize position on load")
                 checked: boolCheck(UM.Preferences.getValue("meshtools/randomise_location_on_load"))
                 onCheckedChanged: UM.Preferences.setValue("meshtools/randomise_location_on_load", checked)
             }
         }
+
+        UM.TooltipArea
+        {
+            width: childrenRect.width
+            height: childrenRect.height
+            text: catalog.i18nc("@info:tooltip", "Place models at a specific location on the build plate when loading them")
+
+            UM.CheckBox
+            {
+				id: checkPosition
+				enabled: !checkRandom.checked
+                text: catalog.i18nc("@option:check", "Set position on load")
+                checked: boolCheck(UM.Preferences.getValue("meshtools/set_location_on_load"))
+                onCheckedChanged: UM.Preferences.setValue("meshtools/set_location_on_load", checked)
+            }
+        }
+		
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "X position relative / Bed Center")
+			
+			UM.Label
+			{
+				id: label_X				
+				text: "X position"
+			}
+			UM.TextFieldWithUnit
+			{
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height		
+				unit: "mm"
+				text: UM.Preferences.getValue("meshtools/set_location_x")
+				
+				anchors.left: label_X.right
+
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_x", modified_text)
+				}				
+			}
+		}
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "Y position relative / Bed Center")
+				
+			UM.Label
+			{
+				id: label_Y
+				text: "Y position"
+			}
+			UM.TextFieldWithUnit
+			{
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height
+				unit: "mm"
+				text: UM.Preferences.getValue("meshtools/set_location_y")
+				
+				anchors.left: label_Y.right
+
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_y", modified_text)
+				}				
+			}
+
+		}				
+		
     }
 
     rightButtons: [

@@ -146,6 +146,20 @@ UM.Dialog
                 onCheckedChanged: UM.Preferences.setValue("meshtools/randomise_location_on_load", checked)
             }
         }
+		
+        UM.TooltipArea
+        {
+            width: childrenRect.width
+            height: childrenRect.height
+            text: catalog.i18nc("@info:tooltip", "Place models at a specific location on the build plate when loading them")
+
+            CheckBox
+            {
+                text: catalog.i18nc("@option:check", "Set position on load")
+                checked: boolCheck(UM.Preferences.getValue("meshtools/set_location_on_load"))
+                onCheckedChanged: UM.Preferences.setValue("meshtools/set_location_on_load", checked)
+            }
+        }		
     }
 
     rightButtons: [
