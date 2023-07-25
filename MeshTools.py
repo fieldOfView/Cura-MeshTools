@@ -203,15 +203,21 @@ class MeshTools(Extension, QObject,):
                     continue
 
                 node_bounds = node.getBoundingBox()
+                self._message.hide()
                 
                 if self._preferences.getValue("meshtools/randomise_location_on_load") :
                     position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                    message_body= catalog.i18nc("@info:status", "Randomise Location fixed by Mesh Tools") + " : {}".format(position)
                 else :
                     Vx=float(self._preferences.getValue("meshtools/set_location_x"))
                     Vy=float(self._preferences.getValue("meshtools/set_location_y"))
                     Logger.log('d', "Position X : {} Y : {}".format(Vx,Vy))
                     position = Vector(Vx,(node_bounds.height / 2),Vy)
-                    
+                    message_body= catalog.i18nc("@info:status", "Location fixed by Mesh Tools") + " X : {} Y : {}".format(Vx,Vy)
+                
+                self._message.setText(message_body)
+                self._message.show()
+        
                 node.setPosition(position)
 
             if (
