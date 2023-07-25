@@ -5,6 +5,7 @@ import QtQuick 2.1
 import QtQuick.Controls 1.1
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.1
+import QtQuick.Layouts 1.1
 
 import UM 1.3 as UM
 import Cura 1.0 as Cura
@@ -159,7 +160,70 @@ UM.Dialog
                 checked: boolCheck(UM.Preferences.getValue("meshtools/set_location_on_load"))
                 onCheckedChanged: UM.Preferences.setValue("meshtools/set_location_on_load", checked)
             }
-        }		
+        }	
+
+
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "X position relative / Bed Center")
+			
+			Label
+			{
+				id: label_X				
+				text: catalog.i18nc("@label:text", "X position")
+			}
+			TextField
+			{
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height		
+				text: UM.Preferences.getValue("meshtools/set_location_x")
+				
+				anchors.left: label_X.right
+
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_x", modified_text)
+				}				
+			}
+			Label
+			{
+				text: "mm"
+			}				
+		}
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "Y position relative / Bed Center")
+				
+			Label
+			{
+				id: label_Y
+				text: catalog.i18nc("@label:text", "Y position")
+			}
+			TextField
+			{
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height
+				unit: "mm"
+				text: UM.Preferences.getValue("meshtools/set_location_y")
+				
+				anchors.left: label_Y.right
+
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_y", modified_text)
+				}				
+			}
+			Label
+			{
+				text: "mm"
+			}			
+		}			
     }
 
     rightButtons: [
