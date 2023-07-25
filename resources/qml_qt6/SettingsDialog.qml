@@ -178,7 +178,7 @@ UM.Dialog
 			UM.Label
 			{
 				id: label_X				
-				text: "X position"
+				text: catalog.i18nc("@label:text", "X position")
 			}
 			UM.TextFieldWithUnit
 			{
@@ -205,7 +205,7 @@ UM.Dialog
 			UM.Label
 			{
 				id: label_Y
-				text: "Y position"
+				text: catalog.i18nc("@label:text", "Y position")
 			}
 			UM.TextFieldWithUnit
 			{
