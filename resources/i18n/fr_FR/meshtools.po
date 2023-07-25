@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mesh Tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-20 15:21+0000\n"
-"PO-Revision-Date: 2023-07-25 23:29+0200\n"
+"POT-Creation-Date: 2023-07-25 21:43+0000\n"
+"PO-Revision-Date: 2023-07-25 23:45+0200\n"
 "Last-Translator: 5axes <5axes@free.fr>\n"
 "Language-Team: 5axes\n"
 "Language: fr\n"
@@ -17,233 +17,248 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Virtaal 0.7.1\n"
 
-#: MeshTools.py:88 qml_qt6/MeshToolsMenu.qml:19 qml_qt5/MeshToolsMenu.qml:18
+#: MeshTools.py:94 resources/qml_qt5/MeshToolsMenu.qml:18
+#: resources/qml_qt6/MeshToolsMenu.qml:19
 msgctxt "@item:inmenu"
 msgid "Reload model"
 msgstr "Recharger le modèle"
 
-#: MeshTools.py:89 qml_qt6/MeshToolsMenu.qml:25 qml_qt5/MeshToolsMenu.qml:24
+#: MeshTools.py:95 resources/qml_qt5/MeshToolsMenu.qml:24
+#: resources/qml_qt6/MeshToolsMenu.qml:25
 msgctxt "@item:inmenu"
 msgid "Rename model..."
 msgstr "Renommer modèle..."
 
-#: MeshTools.py:90
+#: MeshTools.py:96
 msgctxt "@item:inmenu"
 msgid "Replace models..."
 msgstr "Remplacer modèles..."
 
-#: MeshTools.py:92
+#: MeshTools.py:98
 msgctxt "@item:inmenu"
 msgid "Check models"
 msgstr "Vérifier les modèles"
 
-#: MeshTools.py:93
+#: MeshTools.py:99
 msgctxt "@item:inmenu"
 msgid "Analyse models"
 msgstr "Analyser les modèles"
 
-#: MeshTools.py:94 qml_qt6/MeshToolsMenu.qml:50 qml_qt5/MeshToolsMenu.qml:49
+#: MeshTools.py:100 resources/qml_qt5/MeshToolsMenu.qml:49
+#: resources/qml_qt6/MeshToolsMenu.qml:50
 msgctxt "@item:inmenu"
 msgid "Fix simple holes"
 msgstr "Boucher les trous simples"
 
-#: MeshTools.py:95 qml_qt6/MeshToolsMenu.qml:56 qml_qt5/MeshToolsMenu.qml:55
+#: MeshTools.py:101 resources/qml_qt5/MeshToolsMenu.qml:55
+#: resources/qml_qt6/MeshToolsMenu.qml:56
 msgctxt "@item:inmenu"
 msgid "Fix model normals"
 msgstr "Recalculer les normales du modèle"
 
-#: MeshTools.py:96 qml_qt6/MeshToolsMenu.qml:62 qml_qt5/MeshToolsMenu.qml:61
+#: MeshTools.py:102 resources/qml_qt5/MeshToolsMenu.qml:61
+#: resources/qml_qt6/MeshToolsMenu.qml:62
 msgctxt "@item:inmenu"
 msgid "Split model into parts"
 msgid_plural "Split models into parts"
 msgstr[0] "Diviser le modèle en plusieurs parties"
 msgstr[1] "Diviser les modèles en plusieurs parties"
 
-#: MeshTools.py:98 qml_qt6/MeshToolsMenu.qml:69 qml_qt5/MeshToolsMenu.qml:68
+#: MeshTools.py:104 resources/qml_qt5/MeshToolsMenu.qml:68
+#: resources/qml_qt6/MeshToolsMenu.qml:69
 msgctxt "@item:inmenu"
 msgid "Randomise location"
 msgstr "Localisation aléatoire"
 
-#: MeshTools.py:98 qml_qt6/MeshToolsMenu.qml:69 qml_qt5/MeshToolsMenu.qml:68
+#: MeshTools.py:105 resources/qml_qt5/MeshToolsMenu.qml:74
+#: resources/qml_qt6/MeshToolsMenu.qml:75
 msgctxt "@item:inmenu"
 msgid "Fixed location"
 msgstr "Position déterminée"
 
-#: MeshTools.py:99 qml_qt6/MeshToolsMenu.qml:75 qml_qt5/MeshToolsMenu.qml:74
+#: MeshTools.py:106 resources/qml_qt5/MeshToolsMenu.qml:80
+#: resources/qml_qt6/MeshToolsMenu.qml:81
 msgctxt "@item:inmenu"
 msgid "Apply transformations to mesh"
 msgstr "Appliquer les transformations au maillage"
 
-#: MeshTools.py:100 qml_qt6/MeshToolsMenu.qml:81 qml_qt5/MeshToolsMenu.qml:80
+#: MeshTools.py:107 resources/qml_qt5/MeshToolsMenu.qml:86
+#: resources/qml_qt6/MeshToolsMenu.qml:87
 msgctxt "@item:inmenu"
 msgid "Reset origin to center of mesh"
 msgstr "Remettre l'origine au centre du maillage"
 
-#: MeshTools.py:102
+#: MeshTools.py:109
 msgctxt "@item:inmenu"
 msgid "Mesh Tools settings..."
 msgstr "Paramètres de Mesh Tools..."
 
-#: MeshTools.py:104 MeshTools.py:145 MeshTools.py:219
+#: MeshTools.py:111 MeshTools.py:162 MeshTools.py:244
 msgctxt "@info:title"
 msgid "Mesh Tools"
 msgstr "Mesh Tools"
 
-#: MeshTools.py:213 MeshTools.py:493 MeshTools.py:557
+#: MeshTools.py:238 MeshTools.py:523 MeshTools.py:607
 msgctxt "@text Print job name"
 msgid "Untitled"
 msgstr "Sans Nom"
 
-#: MeshTools.py:220
+#: MeshTools.py:245
 #, python-format
 msgctxt "@info:status"
 msgid "Model %s is not watertight, and may not print properly."
 msgstr ""
 "Le modèle %s n'est pas étanche et risque de ne pas s'imprimer correctement."
 
-#: MeshTools.py:225
+#: MeshTools.py:250
 msgctxt "@info:status"
 msgid "Check X-Ray View and repair the model before printing it."
 msgstr "Vérifiez la vue aux Rayons-X et réparez le modèle avant de l'imprimer."
 
-#: MeshTools.py:226
+#: MeshTools.py:251
 msgctxt "@action:button"
 msgid "Show X-Ray View"
 msgstr "Afficher la vue aux Rayons-X"
 
-#: MeshTools.py:229
+#: MeshTools.py:254
 msgctxt "@info:status"
 msgid "Repair the model before printing it."
 msgstr "Réparez le modèle avant de l'imprimer."
 
-#: MeshTools.py:267
+#: MeshTools.py:292
 msgctxt "@info:status"
 msgid "Please select a single model first"
 msgstr "Sélectionnez tout d'abord une pièce"
 
-#: MeshTools.py:272 MeshTools.py:290
+#: MeshTools.py:297 MeshTools.py:315
 msgctxt "@info:status"
 msgid "Please select one or more models first"
 msgstr "Sélectionnez tout d'abord des pièces"
 
-#: MeshTools.py:301
+#: MeshTools.py:326
 msgctxt "@info:status"
 msgid "Check summary:"
 msgstr "Résumé de la vérification :"
 
-#: MeshTools.py:306
+#: MeshTools.py:331
 msgctxt "@info:status"
 msgid "is watertight"
 msgstr "est étanche"
 
-#: MeshTools.py:308
+#: MeshTools.py:333
 msgctxt "@info:status"
 msgid "is not watertight and may not print properly"
 msgstr "n'est pas étanche et peut ne pas imprimer correctement"
 
-#: MeshTools.py:310
+#: MeshTools.py:335
 #, python-brace-format
 msgctxt "@info:status"
 msgid "and consists of {body_count} submeshes"
 msgstr "et consiste en {body_count} sous-ensembles"
 
-#: MeshTools.py:321
+#: MeshTools.py:346
 msgctxt "@info:status"
 msgid "Analysis summary:"
 msgstr "Résumé de l'analyse :"
 
-#: MeshTools.py:325
+#: MeshTools.py:350
 #, python-format
 msgctxt "@info:status"
 msgid "%d vertices, %d faces"
 msgstr "%d sommets, %d faces"
 
-#: MeshTools.py:327
+#: MeshTools.py:352
 #, python-format
 msgctxt "@info:status"
 msgid "area: %d mm2, volume: %d mm3"
 msgstr "surface: %d mm2, volume: %d mm3"
 
-#: MeshTools.py:345
+#: MeshTools.py:370
 msgctxt "@info:status"
 msgid "The mesh needs more extensive repair to become watertight"
 msgstr ""
 "La maille a besoin de réparations plus importantes pour devenir étanche."
 
-#: MeshTools.py:366
+#: MeshTools.py:391
 msgctxt "@info:status"
 msgid "Split result:"
 msgstr "Résultat du fractionnement :"
 
-#: MeshTools.py:372
+#: MeshTools.py:397
 #, python-format
 msgctxt "@info:status"
 msgid "was split in %d submeshes"
 msgstr "a été divisé en %d sous-maillages"
 
-#: MeshTools.py:374
+#: MeshTools.py:399
 msgctxt "@info:status"
 msgid "could not be split into submeshes"
 msgstr "n'a pas pu être divisé en sous-ensembles"
 
-#: MeshTools.py:388
+#: MeshTools.py:413
 msgctxt "@info:status"
 msgid "Replacing a group is not supported"
 msgstr "Le remplacement d'un groupe n'est pas pris en charge"
 
-#: MeshTools.py:409 MeshTools.py:414
+#: MeshTools.py:434 MeshTools.py:439
 msgctxt "@title:window"
 msgid "Select Replacement Mesh File"
 msgstr "Sélectionnez le fichier de maillage de remplacement"
 
-#: MeshTools.py:458
+#: MeshTools.py:488
 msgctxt "@info:status"
 msgid "Reloading a group is not supported"
 msgstr "Le rechargement d'un groupe n'est pas pris en charge"
 
-#: MeshTools.py:465
+#: MeshTools.py:495
 msgctxt "@info:status"
 msgid "No link to the original file was found"
 msgstr "Aucun lien vers le fichier original n'a été trouvé"
 
-#: MeshTools.py:477
+#: MeshTools.py:507
 msgctxt "@info:status"
 msgid "Failed to load mesh"
 msgstr "Échec du chargement du maillage"
 
-#: MeshTools.py:484
+#: MeshTools.py:514
 msgctxt "@info:status"
 msgid "Replacing meshes with a group of meshes is not supported"
 msgstr ""
 "Le remplacement des maillages par un groupe de maillages n'est pas pris en "
 "charge."
 
-#: qml_qt6/SettingsDialog.qml:15 qml_qt5/SettingsDialog.qml:17
+#: resources/qml_qt5/SettingsDialog.qml:18
+#: resources/qml_qt6/SettingsDialog.qml:16
 msgctxt "@title:window"
 msgid "Mesh Tools Settings"
 msgstr "Paramètres du plugin"
 
-#: qml_qt6/SettingsDialog.qml:49 qml_qt5/SettingsDialog.qml:51
+#: resources/qml_qt5/SettingsDialog.qml:52
+#: resources/qml_qt6/SettingsDialog.qml:50
 msgctxt "@info:tooltip"
 msgid "Check if models are watertight when loading them"
 msgstr "Vérifier l'étanchéité des modèles lors de leur chargement"
 
-#: qml_qt6/SettingsDialog.qml:53 qml_qt5/SettingsDialog.qml:55
+#: resources/qml_qt5/SettingsDialog.qml:56
+#: resources/qml_qt6/SettingsDialog.qml:54
 msgctxt "@option:check"
 msgid "Check models on load"
 msgstr "Vérifier les modèles au chargement"
 
-#: qml_qt6/SettingsDialog.qml:63 qml_qt5/SettingsDialog.qml:65
+#: resources/qml_qt5/SettingsDialog.qml:66
+#: resources/qml_qt6/SettingsDialog.qml:64
 msgctxt "@info:tooltip"
 msgid "Always recalculate model normals when loading them"
 msgstr "Toujours recalculer les normales des modèles lors de leur chargement"
 
-#: qml_qt6/SettingsDialog.qml:67 qml_qt5/SettingsDialog.qml:69
+#: resources/qml_qt5/SettingsDialog.qml:70
+#: resources/qml_qt6/SettingsDialog.qml:68
 msgctxt "@option:check"
 msgid "Fix normals on load"
 msgstr "Corriger les normales au chargement"
 
-#: qml_qt6/SettingsDialog.qml:80 qml_qt5/SettingsDialog.qml:82
+#: resources/qml_qt5/SettingsDialog.qml:83
+#: resources/qml_qt6/SettingsDialog.qml:81
 msgctxt "@info:tooltip"
 msgid ""
 "Unit to convert meshes from when the file does not specify a unit (such as "
@@ -253,132 +268,152 @@ msgstr ""
 "spécifie pas d'unité (comme les fichiers STL). Toutes les unités seront "
 "converties en millimètres."
 
-#: qml_qt6/SettingsDialog.qml:88 qml_qt5/SettingsDialog.qml:90
+#: resources/qml_qt5/SettingsDialog.qml:91
+#: resources/qml_qt6/SettingsDialog.qml:89
 msgctxt "@window:text"
 msgid "Unit for files that don't specify a unit:"
 msgstr "Unité pour les fichiers qui ne spécifient pas d'unité :"
 
-#: qml_qt6/SettingsDialog.qml:96 qml_qt5/SettingsDialog.qml:104
+#: resources/qml_qt5/SettingsDialog.qml:105
+#: resources/qml_qt6/SettingsDialog.qml:97
 msgctxt "@option:unit"
 msgid "Micron"
 msgstr "Micron"
 
-#: qml_qt6/SettingsDialog.qml:97 qml_qt5/SettingsDialog.qml:105
+#: resources/qml_qt5/SettingsDialog.qml:106
+#: resources/qml_qt6/SettingsDialog.qml:98
 msgctxt "@option:unit"
 msgid "Millimeter (default)"
 msgstr "Millimètre (défaut)"
 
-#: qml_qt6/SettingsDialog.qml:98 qml_qt5/SettingsDialog.qml:106
+#: resources/qml_qt5/SettingsDialog.qml:107
+#: resources/qml_qt6/SettingsDialog.qml:99
 msgctxt "@option:unit"
 msgid "Centimeter"
 msgstr "Centimètre"
 
-#: qml_qt6/SettingsDialog.qml:99 qml_qt5/SettingsDialog.qml:107
+#: resources/qml_qt5/SettingsDialog.qml:108
+#: resources/qml_qt6/SettingsDialog.qml:100
 msgctxt "@option:unit"
 msgid "Meter"
 msgstr "Mètre"
 
-#: qml_qt6/SettingsDialog.qml:100 qml_qt5/SettingsDialog.qml:108
+#: resources/qml_qt5/SettingsDialog.qml:109
+#: resources/qml_qt6/SettingsDialog.qml:101
 msgctxt "@option:unit"
 msgid "Inch"
 msgstr "Pouce"
 
-#: qml_qt6/SettingsDialog.qml:101 qml_qt5/SettingsDialog.qml:109
+#: resources/qml_qt5/SettingsDialog.qml:110
+#: resources/qml_qt6/SettingsDialog.qml:102
 msgctxt "@option:unit"
 msgid "Feet"
 msgstr "Pied"
 
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+#: resources/qml_qt5/SettingsDialog.qml:141
+#: resources/qml_qt6/SettingsDialog.qml:144
 msgctxt "@info:tooltip"
 msgid "Place models at a random location on the build plate when loading them"
 msgstr ""
 "Placez les modèles à une position aléatoire sur le plateau d'impression "
 "lorsque vous les chargez."
 
-#: qml_qt6/SettingsDialog.qml:147 qml_qt5/SettingsDialog.qml:144
+#: resources/qml_qt5/SettingsDialog.qml:147
+#: resources/qml_qt6/SettingsDialog.qml:150
 msgctxt "@option:check"
 msgid "Randomize position on load"
 msgstr "Position aléatoire au chargement"
 
-#: qml_qt6/SettingsDialog.qml:147 qml_qt5/SettingsDialog.qml:144
-msgctxt "@option:check"
-msgid "Set position on load"
-msgstr "Position au chargement"
-
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+#: resources/qml_qt5/SettingsDialog.qml:157
+#: resources/qml_qt6/SettingsDialog.qml:160
 msgctxt "@info:tooltip"
-msgid "Place models at a specific location on the build plate when loading them"
+msgid ""
+"Place models at a specific location on the build plate when loading them"
 msgstr ""
 "Placer les modèles à un endroit précis de la plaque de construction lors de "
 "leur chargement."
 
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+#: resources/qml_qt5/SettingsDialog.qml:163
+#: resources/qml_qt6/SettingsDialog.qml:166
+msgctxt "@option:check"
+msgid "Set position on load"
+msgstr "Position au chargement"
+
+#: resources/qml_qt5/SettingsDialog.qml:174
+#: resources/qml_qt6/SettingsDialog.qml:176
 msgctxt "@info:tooltip"
 msgid "X position relative / Bed Center"
-msgstr "Position X relative / Centre du plateau""
+msgstr "Position X relative / Centre du plateau"
 
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
-msgctxt "@info:tooltip"
-msgid "Y position relative / Bed Center"
-msgstr "Position Y relative / Centre du plateau"
-
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+#: resources/qml_qt5/SettingsDialog.qml:179
+#: resources/qml_qt6/SettingsDialog.qml:181
 msgctxt "@label:text"
 msgid "X position"
 msgstr "Position X"
 
-#: qml_qt6/SettingsDialog.qml:143 qml_qt5/SettingsDialog.qml:140
+#: resources/qml_qt5/SettingsDialog.qml:207
+#: resources/qml_qt6/SettingsDialog.qml:203
+msgctxt "@info:tooltip"
+msgid "Y position relative / Bed Center"
+msgstr "Position Y relative / Centre du plateau"
+
+#: resources/qml_qt5/SettingsDialog.qml:212
+#: resources/qml_qt6/SettingsDialog.qml:208
 msgctxt "@label:text"
 msgid "Y position"
 msgstr "Position Y"
 
-#: qml_qt6/SettingsDialog.qml:158 qml_qt5/SettingsDialog.qml:155
+#: resources/qml_qt5/SettingsDialog.qml:242
+#: resources/qml_qt6/SettingsDialog.qml:234
 msgctxt "@action:button"
 msgid "Close"
 msgstr "Fermer"
 
-#: qml_qt6/RenameDialog.qml:25 qml_qt5/RenameDialog.qml:24
+#: resources/qml_qt5/RenameDialog.qml:24 resources/qml_qt6/RenameDialog.qml:25
 msgctxt "@title:window"
 msgid "Rename"
 msgstr "Renommer"
 
-#: qml_qt6/RenameDialog.qml:26 qml_qt5/RenameDialog.qml:25
+#: resources/qml_qt5/RenameDialog.qml:25 resources/qml_qt6/RenameDialog.qml:26
 msgctxt "@info"
 msgid "Please provide a new name."
 msgstr "Veuillez indiquer un nouveau nom."
 
-#: qml_qt6/RenameDialog.qml:66 qml_qt5/RenameDialog.qml:74
+#: resources/qml_qt5/RenameDialog.qml:74 resources/qml_qt6/RenameDialog.qml:66
 msgctxt "@action:button"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: qml_qt6/RenameDialog.qml:72 qml_qt5/RenameDialog.qml:79
+#: resources/qml_qt5/RenameDialog.qml:79 resources/qml_qt6/RenameDialog.qml:72
 msgctxt "@action:button"
 msgid "OK"
 msgstr "OK"
 
-#: qml_qt6/MeshToolsMenu.qml:15
-msgctxt "@item:inmenu"
-msgid "Mesh Tools"
-msgstr "Mesh Tools"
-
-#: qml_qt6/MeshToolsMenu.qml:31 qml_qt5/MeshToolsMenu.qml:30
+#: resources/qml_qt5/MeshToolsMenu.qml:30
+#: resources/qml_qt6/MeshToolsMenu.qml:31
 msgctxt "@item:inmenu"
 msgid "Replace model..."
 msgid_plural "Replace models..."
 msgstr[0] "Remplacer modèle..."
 msgstr[1] "Remplacer modèles..."
 
-#: qml_qt6/MeshToolsMenu.qml:38 qml_qt5/MeshToolsMenu.qml:37
+#: resources/qml_qt5/MeshToolsMenu.qml:37
+#: resources/qml_qt6/MeshToolsMenu.qml:38
 msgctxt "@item:inmenu"
 msgid "Check mesh"
 msgid_plural "Check meshes"
 msgstr[0] "Vérifier le maillage"
 msgstr[1] "Vérifier les maillages"
 
-#: qml_qt6/MeshToolsMenu.qml:44 qml_qt5/MeshToolsMenu.qml:43
+#: resources/qml_qt5/MeshToolsMenu.qml:43
+#: resources/qml_qt6/MeshToolsMenu.qml:44
 msgctxt "@item:inmenu"
 msgid "Analyse mesh"
 msgid_plural "Analyse meshes"
 msgstr[0] "Analyser maillage"
 msgstr[1] "Analyser maillages"
+
+#: resources/qml_qt6/MeshToolsMenu.qml:15
+msgctxt "@item:inmenu"
+msgid "Mesh Tools"
+msgstr "Mesh Tools"
