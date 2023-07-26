@@ -1,5 +1,5 @@
-// Copyright (c) 2016 Ultimaker B.V.
-// Cura is released under the terms of the LGPLv3 or higher.
+// Copyright (c) 2023 Aldo Hoeben / fieldOfView
+// MeshTools is released under the terms of the AGPLv3 or higher.
 
 import QtQuick 2.2
 import QtQuick.Controls 1.1
@@ -69,6 +69,12 @@ Menu
         enabled: UM.Selection.hasSelection
         onTriggered: manager.randomiseMeshLocation()
     }
+    MenuItem
+    {
+        text: catalog.i18nc("@item:inmenu", "Fixed location")
+        enabled: UM.Selection.hasSelection
+        onTriggered: manager.setMeshLocation()
+    }	
     MenuItem
     {
         text: catalog.i18nc("@item:inmenu", "Apply transformations to mesh")

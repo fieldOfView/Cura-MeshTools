@@ -49,14 +49,7 @@ import random
 
 from typing import Optional, List, Dict
 
-Resources.addSearchPath(
-    os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        "resources"
-    )
-)  # Plugin translation file import
 
-catalog = i18nCatalog("meshtools")
 
 
 class MeshTools(Extension, QObject,):
@@ -64,10 +57,17 @@ class MeshTools(Extension, QObject,):
         QObject.__init__(self, parent)
         Extension.__init__(self)
 
-        self._application = CuraApplication.getInstance()
+        Resources.addSearchPath(
+            os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                "resources"
+            )
+        )  # Plugin translation file import
+        self._catalog = i18nCatalog("meshtools")                                                         
 
-        self._qml_folder = "qml" if not USE_QT5 else "qml_qt5"
+        self._qml_folder = "qml_qt6" if not USE_QT5 else "qml_qt5"
 
+        self._application = CuraApplication.getInstance()                                                         
         self._application.engineCreatedSignal.connect(self._onEngineCreated)
         self._application.fileLoaded.connect(self._onFileLoaded)
         self._application.fileCompleted.connect(self._onFileCompleted)
@@ -86,25 +86,29 @@ class MeshTools(Extension, QObject,):
         self._preferences.addPreference("meshtools/check_models_on_load", True)
         self._preferences.addPreference("meshtools/fix_normals_on_load", False)
         self._preferences.addPreference("meshtools/randomise_location_on_load", False)
+        self._preferences.addPreference("meshtools/set_location_on_load", False)
+        self._preferences.addPreference("meshtools/set_location_x", 0)
+        self._preferences.addPreference("meshtools/set_location_y", 0)
         self._preferences.addPreference("meshtools/model_unit_factor", 1)
 
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Reload model"), self.reloadMesh)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Rename model..."), self.renameMesh)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Replace models..."), self.replaceMeshes)
         self.addMenuItem("", lambda: None)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Analyse models"), self.analyseMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Check models"), self.checkMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Analyse models"), self.analyseMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Fix simple holes"), self.fixSimpleHolesForMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Fix model normals"), self.fixNormalsForMeshes)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Split model into parts"), self.splitMeshes)
         self.addMenuItem(" ", lambda: None)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Reset origin to center of mesh"), self.resetMeshOrigin)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Randomise location"), self.randomiseMeshLocation)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Fixed location"), self.setMeshLocation)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Apply transformations to mesh"), self.bakeMeshTransformation)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Reset origin to center of mesh"), self.resetMeshOrigin)
         self.addMenuItem("  ", lambda: None)
-        self.addMenuItem(catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
+        self.addMenuItem(self._catalog.i18nc("@item:inmenu", "Mesh Tools settings..."), self.showSettingsDialog)
 
-        self._message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
+        self._message = Message(title=self._catalog.i18nc("@info:title", "Mesh Tools"))
         self._additional_menu = None  # type: Optional[QObject]
 
     def showSettingsDialog(self) -> None:
@@ -155,7 +159,7 @@ class MeshTools(Extension, QObject,):
 
         if USE_QT5:
             context_menu.insertSeparator(0)
-            context_menu.insertMenu(0, catalog.i18nc("@info:title", "Mesh Tools"))
+            context_menu.insertMenu(0, self._catalog.i18nc("@info:title", "Mesh Tools"))
 
         # Move additional menu items into context menu
         self._additional_menu.moveToContextMenu(context_menu)
@@ -193,13 +197,27 @@ class MeshTools(Extension, QObject,):
             if not mesh_data:
                 continue
             file_name = mesh_data.getFileName()
-
-            if self._preferences.getValue("meshtools/randomise_location_on_load") and global_container_stack != None:
+            
+            if ( self._preferences.getValue("meshtools/randomise_location_on_load") or self._preferences.getValue("meshtools/set_location_on_load") ) and global_container_stack != None:
                 if file_name and os.path.splitext(file_name)[1].lower() == ".3mf": # don't randomise project files
                     continue
 
                 node_bounds = node.getBoundingBox()
-                position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                self._message.hide()
+                
+                if self._preferences.getValue("meshtools/randomise_location_on_load") :
+                    position = self._randomLocation(node_bounds, max_x_coordinate, max_y_coordinate)
+                    message_body= self._catalog.i18nc("@info:status", "Randomise Location fixed by Mesh Tools") + " : {}".format(position)
+                else :
+                    Vx=float(self._preferences.getValue("meshtools/set_location_x"))
+                    Vy=float(self._preferences.getValue("meshtools/set_location_y"))
+                    Logger.log('d', "Position X : {} Y : {}".format(Vx,Vy))
+                    position = Vector(Vx,(node_bounds.height / 2),Vy)
+                    message_body= self._catalog.i18nc("@info:status", "Location fixed by Mesh Tools") + " X : {} Y : {}".format(Vx,Vy)
+                
+                self._message.setText(message_body)
+                self._message.show()
+        
                 node.setPosition(position)
 
             if (
@@ -223,23 +241,23 @@ class MeshTools(Extension, QObject,):
 
             if self._preferences.getValue("meshtools/check_models_on_load") and not tri_node.is_watertight:
                 if not file_name:
-                    file_name = catalog.i18nc("@text Print job name", "Untitled")
+                    file_name = self._catalog.i18nc("@text Print job name", "Untitled")
                 base_name = os.path.basename(file_name)
 
                 if file_name in self._mesh_not_watertight_messages:
                     self._mesh_not_watertight_messages[file_name].hide()
 
-                message = Message(title=catalog.i18nc("@info:title", "Mesh Tools"))
-                body = catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
+                message = Message(title=self._catalog.i18nc("@info:title", "Mesh Tools"))
+                body = self._catalog.i18nc("@info:status", "Model %s is not watertight, and may not print properly.") % base_name
 
                 # XRayView may not be available if the plugin has been disabled
                 active_view = self._controller.getActiveView()
                 if active_view and "XRayView" in self._controller.getAllViews() and active_view.getPluginId() != "XRayView":
-                    body += " " + catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
-                    message.addAction("X-Ray", catalog.i18nc("@action:button", "Show X-Ray View"), "", "")
+                    body += " " + self._catalog.i18nc("@info:status", "Check X-Ray View and repair the model before printing it.")
+                    message.addAction("X-Ray", self._catalog.i18nc("@action:button", "Show X-Ray View"), "", "")
                     message.actionTriggered.connect(self._showXRayView)
                 else:
-                    body += " " +catalog.i18nc("@info:status", "Repair the model before printing it.")
+                    body += " " +self._catalog.i18nc("@info:status", "Repair the model before printing it.")
 
                 message.setText(body)
                 message.show()
@@ -277,12 +295,12 @@ class MeshTools(Extension, QObject,):
             if len(selection) == 1:
                 return selection[:]
 
-            self._message.setText(catalog.i18nc("@info:status", "Please select a single model first"))
+            self._message.setText(self._catalog.i18nc("@info:status", "Please select a single model first"))
         else:
             if len(selection) >= 1:
                 return selection[:]
 
-            self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
+            self._message.setText(self._catalog.i18nc("@info:status", "Please select one or more models first"))
 
         self._message.show()
         return []
@@ -300,7 +318,7 @@ class MeshTools(Extension, QObject,):
             if deep_selection:
                 return deep_selection
 
-        self._message.setText(catalog.i18nc("@info:status", "Please select one or more models first"))
+        self._message.setText(self._catalog.i18nc("@info:status", "Please select one or more models first"))
         self._message.show()
 
         return []
@@ -311,16 +329,16 @@ class MeshTools(Extension, QObject,):
         if not nodes_list:
             return
 
-        message_body = catalog.i18nc("@info:status", "Check summary:")
+        message_body = self._catalog.i18nc("@info:status", "Check summary:")
         for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshData())
             message_body = message_body + "\n - %s" % node.getName()
             if tri_node.is_watertight:
-                message_body = message_body + " " + catalog.i18nc("@info:status", "is watertight")
+                message_body = message_body + " " + self._catalog.i18nc("@info:status", "is watertight")
             else:
-                message_body = message_body + " " + catalog.i18nc("@info:status", "is not watertight and may not print properly")
+                message_body = message_body + " " + self._catalog.i18nc("@info:status", "is not watertight and may not print properly")
             if tri_node.body_count > 1:
-                message_body = message_body + " " + catalog.i18nc("@info:status", "and consists of {body_count} submeshes").format(body_count = tri_node.body_count)
+                message_body = message_body + " " + self._catalog.i18nc("@info:status", "and consists of {body_count} submeshes").format(body_count = tri_node.body_count)
 
         self._message.setText(message_body)
         self._message.show()
@@ -331,13 +349,13 @@ class MeshTools(Extension, QObject,):
         if not nodes_list:
             return
 
-        message_body = catalog.i18nc("@info:status", "Analysis summary:")
+        message_body = self._catalog.i18nc("@info:status", "Analysis summary:")
         for node in nodes_list:
             tri_node = self._toTriMesh(node.getMeshDataTransformed())
             message_body = message_body + "\n - %s:" % node.getName()
-            message_body += "\n\t" + catalog.i18nc("@info:status", "%d vertices, %d faces") % (len(tri_node.vertices), len(tri_node.faces))
+            message_body += "\n\t" + self._catalog.i18nc("@info:status", "%d vertices, %d faces") % (len(tri_node.vertices), len(tri_node.faces))
             if tri_node.is_watertight:
-                message_body += "\n\t" + catalog.i18nc("@info:status", "area: %d mm2, volume: %d mm3") % (tri_node.area, tri_node.volume)
+                message_body += "\n\t" + self._catalog.i18nc("@info:status", "area: %d mm2, volume: %d mm3") % (tri_node.area, tri_node.volume)
 
         self._message.setText(message_body)
         self._message.show()
@@ -353,7 +371,7 @@ class MeshTools(Extension, QObject,):
             success = tri_node.fill_holes()
             self._replaceSceneNode(node, [tri_node])
             if not success:
-                self._message.setText(catalog.i18nc(
+                self._message.setText(self._catalog.i18nc(
                     "@info:status",
                     "The mesh needs more extensive repair to become watertight"
                 ))
@@ -376,15 +394,15 @@ class MeshTools(Extension, QObject,):
         if not nodes_list:
             return
 
-        message_body = catalog.i18nc("@info:status", "Split result:")
+        message_body = self._catalog.i18nc("@info:status", "Split result:")
         for node in nodes_list:
             message_body = message_body + "\n - %s" % node.getName()
             tri_node = self._toTriMesh(node.getMeshData())
             if tri_node.body_count > 1:
                 self._replaceSceneNode(node, tri_node.split(only_watertight=False))
-                message_body = message_body + " " + catalog.i18nc("@info:status", "was split in %d submeshes") % tri_node.body_count
+                message_body = message_body + " " + self._catalog.i18nc("@info:status", "was split in %d submeshes") % tri_node.body_count
             else:
-                message_body = message_body + " " + catalog.i18nc("@info:status", "could not be split into submeshes")
+                message_body = message_body + " " + self._catalog.i18nc("@info:status", "could not be split into submeshes")
 
         self._message.setText(message_body)
         self._message.show()
@@ -398,7 +416,7 @@ class MeshTools(Extension, QObject,):
         for node in self._node_queue:
             mesh_data = node.getMeshData()
             if not mesh_data:
-                self._message.setText(catalog.i18nc("@info:status", "Replacing a group is not supported"))
+                self._message.setText(self._catalog.i18nc("@info:status", "Replacing a group is not supported"))
                 self._message.show()
                 self._node_queue = [] #type: List[SceneNode]
                 return
@@ -419,12 +437,12 @@ class MeshTools(Extension, QObject,):
 
             file_name, _ = QFileDialog.getOpenFileName(
                 parent=None,
-                caption=catalog.i18nc("@title:window", "Select Replacement Mesh File"),
+                caption=self._catalog.i18nc("@title:window", "Select Replacement Mesh File"),
                 directory=directory, options=options, filter=filter_types
             )
         else:
             dialog = QFileDialog()
-            dialog.setWindowTitle(catalog.i18nc("@title:window", "Select Replacement Mesh File"))
+            dialog.setWindowTitle(self._catalog.i18nc("@title:window", "Select Replacement Mesh File"))
             dialog.setDirectory(directory)
             dialog.setNameFilters(self._application.getMeshFileHandler().supportedReadFileTypes)
             dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
@@ -473,14 +491,14 @@ class MeshTools(Extension, QObject,):
 
         mesh_data = self._node_queue[0].getMeshData()
         if not mesh_data:
-            self._message.setText(catalog.i18nc("@info:status", "Reloading a group is not supported"))
+            self._message.setText(self._catalog.i18nc("@info:status", "Reloading a group is not supported"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
 
         file_name = mesh_data.getFileName()
         if not file_name:
-            self._message.setText(catalog.i18nc("@info:status", "No link to the original file was found"))
+            self._message.setText(self._catalog.i18nc("@info:status", "No link to the original file was found"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
@@ -492,14 +510,14 @@ class MeshTools(Extension, QObject,):
     def _readMeshFinished(self, job) -> None:
         job_result = job.getResult()
         if len(job_result) == 0:
-            self._message.setText(catalog.i18nc("@info:status", "Failed to load mesh"))
+            self._message.setText(self._catalog.i18nc("@info:status", "Failed to load mesh"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
 
         mesh_data = job_result[0].getMeshData()
         if not mesh_data:
-            self._message.setText(catalog.i18nc("@info:status", "Replacing meshes with a group of meshes is not supported"))
+            self._message.setText(self._catalog.i18nc("@info:status", "Replacing meshes with a group of meshes is not supported"))
             self._message.show()
             self._node_queue = [] #type: List[SceneNode]
             return
@@ -508,7 +526,7 @@ class MeshTools(Extension, QObject,):
         if file_name:
             mesh_name = os.path.basename(file_name)
         else:
-            mesh_name = catalog.i18nc("@text Print job name", "Untitled")
+            mesh_name = self._catalog.i18nc("@text Print job name", "Untitled")
 
         has_merged_nodes = False
 
@@ -547,6 +565,26 @@ class MeshTools(Extension, QObject,):
             op.addOperation(SetTransformOperation(node, translation=position))
         op.push()
 
+    @pyqtSlot()
+    def setMeshLocation(self) -> None:
+        nodes_list = self._getAllSelectedNodes()
+        if not nodes_list:
+            return
+
+        global_container_stack = self._application.getGlobalContainerStack()
+        if not global_container_stack:
+            return
+
+        op = GroupedOperation()
+        for node in nodes_list:
+            node_bounds = node.getBoundingBox()
+            Vx=float(self._preferences.getValue("meshtools/set_location_x"))
+            Vy=float(self._preferences.getValue("meshtools/set_location_y"))
+            Logger.log('d', "Position X : {} Y : {}".format(Vx,Vy))
+            position = Vector(Vx,(node_bounds.height / 2),Vy)
+            op.addOperation(SetTransformOperation(node, translation=position))
+        op.push()
+        
     def _randomLocation(self, node_bounds, max_x_coordinate, max_y_coordinate):
         return Vector(
             (2 * random.random() - 1) * (max_x_coordinate - (node_bounds.width / 2)),
@@ -572,7 +610,7 @@ class MeshTools(Extension, QObject,):
                     file_name = ""
                 mesh_name = os.path.basename(file_name)
                 if not mesh_name:
-                    mesh_name = catalog.i18nc("@text Print job name", "Untitled")
+                    mesh_name = self._catalog.i18nc("@text Print job name", "Untitled")
 
             local_transformation = node.getLocalTransformation()
             position = local_transformation.getTranslation()

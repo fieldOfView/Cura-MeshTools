@@ -1,4 +1,4 @@
-name: "Autmatically update i18n files"
+name: "Automatically update i18n files"
 
 on:
   push:

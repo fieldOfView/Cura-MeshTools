@@ -5,6 +5,7 @@ import QtQuick 2.1
 import QtQuick.Controls 1.1
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.1
+import QtQuick.Layouts 1.1
 
 import UM 1.3 as UM
 import Cura 1.0 as Cura
@@ -141,11 +142,109 @@ UM.Dialog
 
             CheckBox
             {
+				id: checkRandom
+				enabled: !checkPosition.checked			
                 text: catalog.i18nc("@option:check", "Randomize position on load")
                 checked: boolCheck(UM.Preferences.getValue("meshtools/randomise_location_on_load"))
                 onCheckedChanged: UM.Preferences.setValue("meshtools/randomise_location_on_load", checked)
             }
         }
+		
+        UM.TooltipArea
+        {
+            width: childrenRect.width
+            height: childrenRect.height
+            text: catalog.i18nc("@info:tooltip", "Place models at a specific location on the build plate when loading them")
+
+            CheckBox
+            {
+				id: checkPosition
+				enabled: !checkRandom.checked			
+                text: catalog.i18nc("@option:check", "Set position on load")
+                checked: boolCheck(UM.Preferences.getValue("meshtools/set_location_on_load"))
+                onCheckedChanged: UM.Preferences.setValue("meshtools/set_location_on_load", checked)
+            }
+        }	
+
+
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "X position relative / Bed Center")
+			
+			Label
+			{
+				id: label_X				
+				text: catalog.i18nc("@label:text", "X position")
+			}
+			TextField
+			{
+				id: field_X
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height		
+				text: UM.Preferences.getValue("meshtools/set_location_x")
+				
+				anchors.left: label_X.right
+
+				validator: DoubleValidator
+				{
+					decimals: 1
+					locale: "en_US"
+				}
+				
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_x", modified_text)
+				}				
+			}
+			Label
+			{
+				text: "mm"
+				
+				anchors.left: field_X.right
+			}				
+		}
+		UM.TooltipArea
+		{
+			width: childrenRect.width
+			height: childrenRect.height
+			text: catalog.i18nc("@info:tooltip", "Y position relative / Bed Center")
+				
+			Label
+			{
+				id: label_Y
+				text: catalog.i18nc("@label:text", "Y position")
+			}
+			TextField
+			{
+				id: field_Y
+				width: UM.Theme.getSize("setting_control").width
+				height: UM.Theme.getSize("setting_control").height
+				text: UM.Preferences.getValue("meshtools/set_location_y")
+				
+				anchors.left: label_Y.right
+
+				validator: DoubleValidator
+				{
+					decimals: 1
+					locale: "en_US"
+				}
+			
+				onEditingFinished:
+				{
+					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
+					UM.Preferences.setValue("meshtools/set_location_y", modified_text)
+				}				
+			}
+			Label
+			{
+				text: "mm"
+				
+				anchors.left: field_Y.right
+			}			
+		}			
     }
 
     rightButtons: [

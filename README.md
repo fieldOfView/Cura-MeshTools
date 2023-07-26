@@ -43,6 +43,11 @@ When printing with a consumable build plate surface, it can be beneficial to
 print have each print on a different location on the build plate to make sure
 it wears down evenly.
 
+### Fixed location
+Allows you to position parts at a specific position defined in the plugin settings.
+The position can be set in the settings dialog which can be found via
+`Extensions -> Mesh Tools -> Mesh Tools Settings`
+
 ### Apply transformations to mesh
 This function applies the rotation and scale to the mesh coordinates, and
 resets the model rotation and scale to upright and 100%. This can make it
