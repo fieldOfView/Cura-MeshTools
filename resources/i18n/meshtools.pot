@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mesh Tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-25 23:25+0000\n"
+"POT-Creation-Date: 2023-07-26 09:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -351,20 +351,20 @@ msgctxt "@label:text"
 msgid "X position"
 msgstr ""
 
-#: resources/qml_qt5/SettingsDialog.qml:207
-#: resources/qml_qt6/SettingsDialog.qml:203
+#: resources/qml_qt5/SettingsDialog.qml:213
+#: resources/qml_qt6/SettingsDialog.qml:209
 msgctxt "@info:tooltip"
 msgid "Y position relative / Bed Center"
 msgstr ""
 
-#: resources/qml_qt5/SettingsDialog.qml:212
-#: resources/qml_qt6/SettingsDialog.qml:208
+#: resources/qml_qt5/SettingsDialog.qml:218
+#: resources/qml_qt6/SettingsDialog.qml:214
 msgctxt "@label:text"
 msgid "Y position"
 msgstr ""
 
-#: resources/qml_qt5/SettingsDialog.qml:242
-#: resources/qml_qt6/SettingsDialog.qml:234
+#: resources/qml_qt5/SettingsDialog.qml:254
+#: resources/qml_qt6/SettingsDialog.qml:246
 msgctxt "@action:button"
 msgid "Close"
 msgstr ""
