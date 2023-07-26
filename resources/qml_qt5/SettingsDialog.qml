@@ -187,6 +187,12 @@ UM.Dialog
 				
 				anchors.left: label_X.right
 
+				validator: DoubleValidator
+				{
+					decimals: 1
+					locale: "en_US"
+				}
+				
 				onEditingFinished:
 				{
 					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
@@ -220,6 +226,12 @@ UM.Dialog
 				
 				anchors.left: label_Y.right
 
+				validator: DoubleValidator
+				{
+					decimals: 1
+					locale: "en_US"
+				}
+			
 				onEditingFinished:
 				{
 					var modified_text = text.replace(",", ".") // User convenience. We use dots for decimal values
